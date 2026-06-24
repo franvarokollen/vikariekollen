@@ -39,6 +39,9 @@
       lessonPlanToast:     'Öppnar lektionsplanen i Lektionskollen (ej kopplad i demon).',
       lessonPlanNone:      'Lektionsplan: kommer via Lektionskollen',
       bookingsTitle:       'Kommande pass',
+      bookingsTitlePast:   'Tidigare pass',
+      noUpcoming:          'Inga kommande pass.',
+      olderLine:           '+ {n} äldre',
       movedOnGroup:        'Tidigare',
       waitTimeLine:        'Erbjudandet låg hos dig i {dur} innan det gick vidare.',
     },
@@ -61,6 +64,9 @@
       lessonPlanToast:     'Opening lesson plan in Lektionskollen (not connected in the demo).',
       lessonPlanNone:      'Lesson plan: coming via Lektionskollen',
       bookingsTitle:       'Upcoming bookings',
+      bookingsTitlePast:   'Past bookings',
+      noUpcoming:          'No upcoming bookings.',
+      olderLine:           '+ {n} older',
       movedOnGroup:        'Past',
       waitTimeLine:        'This offer was with you for {dur} before it moved on.',
     },
@@ -315,27 +321,41 @@
       return;
     }
 
-    // Sort by date then startTime ascending
-    const sorted = bookings.slice().sort(function (a, b) {
-      const gap_a = a.gap || {};
-      const gap_b = b.gap || {};
-      const d = (a.date || gap_a.date || '').localeCompare(b.date || gap_b.date || '');
+    // "today" from the simulated clock — compare by date string (YYYY-MM-DD)
+    const todayStr = (function () {
+      const d = new Date(VK.Adapter.now());
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }());
+
+    function bookingDate(b) { return b.date || (b.gap && b.gap.date) || ''; }
+
+    const upcoming = bookings.filter(function (b) { return bookingDate(b) >= todayStr; });
+    const past     = bookings.filter(function (b) { return bookingDate(b) <  todayStr; });
+
+    // Sort upcoming ASC, past DESC
+    function cmpAsc(a, b) {
+      const d = bookingDate(a).localeCompare(bookingDate(b));
       if (d !== 0) return d;
-      return (gap_a.startTime || '').localeCompare(gap_b.startTime || '');
-    });
+      return ((a.gap && a.gap.startTime) || '').localeCompare((b.gap && b.gap.startTime) || '');
+    }
+    upcoming.sort(cmpAsc);
+    past.sort(function (a, b) { return -cmpAsc(a, b); });
 
-    sorted.forEach(function (booking) {
-      const gap = booking.gap || {};
-      const lessons = booking.lessons || [];
-      const date = booking.date || gap.date || '';
+    // ── Helper: render one booking card ──────────────────────
+    function renderBookingCard(booking, isPast) {
+      const gap     = booking.gap || {};
+      const date    = booking.date || gap.date || '';
       const subject = booking.subject || gap.subject || '—';
-      const group = gap.group || '';
+      const group   = gap.group || '';
       const teacher = gap.teacherName || '';
-      const cost = booking.costSek;
+      const cost    = booking.costSek;
 
-      const card = el('div', { className: 'sub-card sub-booking-card' });
+      const cardClass = 'sub-card sub-booking-card' + (isPast ? ' sub-booking-card--past' : '');
+      const card = el('div', { className: cardClass });
 
-      // Date + time banner
       card.appendChild(
         el('div', { className: 'sub-booking-when' },
           el('span', { className: 'sub-booking-date' }, VK.fmt.date(date)),
@@ -345,14 +365,12 @@
         )
       );
 
-      // Subject · class
       card.appendChild(
         el('div', { className: 'sub-booking-subject' },
           subject + (group ? ' · ' + group : '')
         )
       );
 
-      // Teacher being covered
       if (teacher) {
         card.appendChild(
           el('div', { className: 'sub-booking-teacher' },
@@ -361,7 +379,6 @@
         );
       }
 
-      // Cost
       if (cost != null && Number(cost) > 0) {
         card.appendChild(
           el('div', { className: 'sub-booking-cost' },
@@ -370,12 +387,52 @@
         );
       }
 
-      // Lesson plan section
       const lessonPlanDiv = buildLessonPlanSection(el, components, booking);
       if (lessonPlanDiv) card.appendChild(lessonPlanDiv);
 
-      container.appendChild(card);
-    });
+      return card;
+    }
+
+    // ── Upcoming section ──────────────────────────────────────
+    container.appendChild(
+      el('div', { className: 'sub-section-heading' },
+        T('bookingsTitle') + (upcoming.length ? ' (' + upcoming.length + ')' : '')
+      )
+    );
+
+    if (upcoming.length) {
+      upcoming.forEach(function (b) {
+        container.appendChild(renderBookingCard(b, false));
+      });
+    } else {
+      container.appendChild(
+        el('div', { className: 'sub-section-empty' }, T('noUpcoming'))
+      );
+    }
+
+    // ── Past section (only when there are past bookings) ──────
+    const PAST_VISIBLE = 5;
+    if (past.length) {
+      container.appendChild(
+        el('div', { className: 'sub-section-heading sub-section-heading--past' },
+          T('bookingsTitlePast') + ' (' + past.length + ')'
+        )
+      );
+
+      const visible = past.slice(0, PAST_VISIBLE);
+      visible.forEach(function (b) {
+        container.appendChild(renderBookingCard(b, true));
+      });
+
+      if (past.length > PAST_VISIBLE) {
+        const extra = past.length - PAST_VISIBLE;
+        container.appendChild(
+          el('div', { className: 'sub-older-line' },
+            T('olderLine').replace('{n}', extra)
+          )
+        );
+      }
+    }
   };
 
   // ----------------------------------------------------------

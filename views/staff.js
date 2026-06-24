@@ -37,6 +37,10 @@
       lessonPlanVia:       'via Lektionskollen',
       lessonPlanToast:     'Öppnar lektionsplanen i Lektionskollen (ej kopplad i demon).',
       lessonPlanNone:      'Lektionsplan: kommer via Lektionskollen',
+      coversTitle:         'Kommande vikariat',
+      coversTitlePast:     'Tidigare vikariat',
+      noUpcoming:          'Inga kommande vikariat.',
+      olderLine:           '+ {n} äldre',
       workloadHeading:     'Din täckningstjänst denna månad',
       workloadNote:        'Skolan fördelar täckningsuppdrag jämnt — den här vyn visar hur mycket du tagit på dig.',
       coversThisMonth:     'Pass denna månad',
@@ -60,6 +64,10 @@
       lessonPlanVia:       'via Lektionskollen',
       lessonPlanToast:     'Opening lesson plan in Lektionskollen (not connected in the demo).',
       lessonPlanNone:      'Lesson plan: coming via Lektionskollen',
+      coversTitle:         'Upcoming covers',
+      coversTitlePast:     'Past covers',
+      noUpcoming:          'No upcoming covers.',
+      olderLine:           '+ {n} older',
       workloadHeading:     'Your cover load this month',
       workloadNote:        'The school distributes cover fairly — this view shows how much you have taken on.',
       coversThisMonth:     'Covers this month',
@@ -274,26 +282,39 @@
       return;
     }
 
-    // Sort ascending by date then startTime
-    const sorted = covers.slice().sort(function (a, b) {
-      const ga = a.gap || {};
-      const gb = b.gap || {};
-      const d = (a.date || ga.date || '').localeCompare(b.date || gb.date || '');
-      if (d !== 0) return d;
-      return (ga.startTime || '').localeCompare(gb.startTime || '');
-    });
+    // "today" from the simulated clock — compare by date string (YYYY-MM-DD)
+    const todayStr = (function () {
+      const d = new Date(VK.Adapter.now());
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }());
 
-    sorted.forEach(function (cover) {
+    function coverDate(c) { return c.date || (c.gap && c.gap.date) || ''; }
+
+    const upcoming = covers.filter(function (c) { return coverDate(c) >= todayStr; });
+    const past     = covers.filter(function (c) { return coverDate(c) <  todayStr; });
+
+    function cmpAsc(a, b) {
+      const d = coverDate(a).localeCompare(coverDate(b));
+      if (d !== 0) return d;
+      return ((a.gap && a.gap.startTime) || '').localeCompare((b.gap && b.gap.startTime) || '');
+    }
+    upcoming.sort(cmpAsc);
+    past.sort(function (a, b) { return -cmpAsc(a, b); });
+
+    // ── Helper: render one cover card ─────────────────────────
+    function renderCoverCard(cover, isPast) {
       const gap     = cover.gap || {};
-      const lessons = cover.lessons || [];
       const date    = cover.date || gap.date || '';
       const subject = cover.subject || gap.subject || '—';
       const group   = gap.group || '';
       const teacher = gap.teacherName || '';
 
-      const card = el('div', { className: 'staff-card staff-cover-card' });
+      const cardClass = 'staff-card staff-cover-card' + (isPast ? ' staff-cover-card--past' : '');
+      const card = el('div', { className: cardClass });
 
-      // Date + time banner
       card.appendChild(
         el('div', { className: 'staff-cover-when' },
           el('span', { className: 'staff-cover-date' }, VK.fmt.date(date)),
@@ -303,14 +324,12 @@
         )
       );
 
-      // Subject · class
       card.appendChild(
         el('div', { className: 'staff-cover-subject' },
           subject + (group ? ' · ' + group : '')
         )
       );
 
-      // Teacher covered
       if (teacher) {
         card.appendChild(
           el('div', { className: 'staff-cover-teacher' },
@@ -319,12 +338,52 @@
         );
       }
 
-      // Lesson plan section (no cost line for internal staff)
       const planSection = buildLessonPlanSection(el, components, cover);
       if (planSection) card.appendChild(planSection);
 
-      container.appendChild(card);
-    });
+      return card;
+    }
+
+    // ── Upcoming section ──────────────────────────────────────
+    container.appendChild(
+      el('div', { className: 'staff-section-heading' },
+        T('coversTitle') + (upcoming.length ? ' (' + upcoming.length + ')' : '')
+      )
+    );
+
+    if (upcoming.length) {
+      upcoming.forEach(function (c) {
+        container.appendChild(renderCoverCard(c, false));
+      });
+    } else {
+      container.appendChild(
+        el('div', { className: 'staff-section-empty' }, T('noUpcoming'))
+      );
+    }
+
+    // ── Past section (only when there are past covers) ────────
+    const PAST_VISIBLE = 5;
+    if (past.length) {
+      container.appendChild(
+        el('div', { className: 'staff-section-heading staff-section-heading--past' },
+          T('coversTitlePast') + ' (' + past.length + ')'
+        )
+      );
+
+      const visible = past.slice(0, PAST_VISIBLE);
+      visible.forEach(function (c) {
+        container.appendChild(renderCoverCard(c, true));
+      });
+
+      if (past.length > PAST_VISIBLE) {
+        const extra = past.length - PAST_VISIBLE;
+        container.appendChild(
+          el('div', { className: 'staff-older-line' },
+            T('olderLine').replace('{n}', extra)
+          )
+        );
+      }
+    }
   };
 
   // ----------------------------------------------------------

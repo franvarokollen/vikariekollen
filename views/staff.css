@@ -203,6 +203,60 @@
   color: var(--muted);
 }
 
+/* -- Section headings (upcoming / past) -------------------- */
+.staff-section-heading {
+  max-width: 440px;
+  width: 100%;
+  margin: 14px auto 6px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--navy);
+}
+
+.staff-section-heading--past {
+  color: var(--muted);
+  font-weight: 700;
+  margin-top: 20px;
+}
+
+/* Empty line within a section */
+.staff-section-empty {
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* "+ N äldre" overflow indicator */
+.staff-older-line {
+  max-width: 440px;
+  width: 100%;
+  margin: 6px auto 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  padding-left: 2px;
+}
+
+/* Past cover card — dimmed */
+.staff-cover-card--past {
+  opacity: .7;
+}
+
+.staff-cover-card--past .staff-cover-date {
+  color: var(--muted);
+}
+
+.staff-cover-card--past .staff-cover-time {
+  color: var(--muted);
+  font-weight: 500;
+}
+
 /* -- Cover card -------------------------------------------- */
 .staff-cover-card {
   display: flex;

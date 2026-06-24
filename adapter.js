@@ -493,6 +493,16 @@
       { id: 'gap-13', teacherName: 'Bo Ek',         teacherInitials: 'BE', subject: 'Slöjd',     group: '8A', date: '2026-06-23', startTime: '10:25', endTime: '12:10', lessonCount: 2, periodIds: [], status: 'filled',    mode: 'admin_assign', filledByType: 'external_sub', filledById: 'sub-10', filledBySubId: 'sub-10', filledBySubName: 'Lena Persson' },
       // gap-14 expired cascade this week — pool exhausted (board variety).
       { id: 'gap-14', teacherName: 'Ulla Strand',   teacherInitials: 'US', subject: 'Engelska',  group: '9A', date: '2026-06-22', startTime: '13:10', endTime: '14:55', lessonCount: 2, periodIds: [], status: 'expired',   mode: 'cascade',   filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
+
+      // ── EXTRA CURRENT-WEEK LIVE GAPS — push the demo defaults to ≥5 LIVE ───
+      // offers each (gap-15/16 give Erik + Karin two more live Matematik/Fysik
+      // pools; gap-17 spreads more live offers across other subs/staff).
+      // gap-15 open_pool Matematik Thu PM — Erik + Karin + others contacted.
+      { id: 'gap-15', teacherName: 'Sven Aman',     teacherInitials: 'SA', subject: 'Matematik', group: '8A', date: '2026-06-25', startTime: '13:10', endTime: '14:55', lessonCount: 2, periodIds: [], status: 'open_pool', mode: 'open_pool', filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
+      // gap-16 open_pool Fysik Fri AM — internal-first to Karin + Erik.
+      { id: 'gap-16', teacherName: 'Nils Berg',     teacherInitials: 'NB', subject: 'Fysik',     group: '9C', date: '2026-06-26', startTime: '08:20', endTime: '09:10', lessonCount: 1, periodIds: [], status: 'open_pool', mode: 'open_pool', filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
+      // gap-17 open_pool Matematik Fri PM — broad Matematik pool (subs + staff).
+      { id: 'gap-17', teacherName: 'Greta Sund',    teacherInitials: 'GS', subject: 'Matematik', group: '7B', date: '2026-06-26', startTime: '13:10', endTime: '14:55', lessonCount: 2, periodIds: [], status: 'open_pool', mode: 'open_pool', filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
     ];
 
     // Offers + targets. One offer per gap that has been sent or filled.
@@ -635,6 +645,39 @@
         targets: [
           ext('sub-4', { rank: 1, state: 'declined', responseToken: _token(), sentAt: new Date(BASE_NOW - 3 * 86400000).toISOString(), respondedAt: new Date(BASE_NOW - 3 * 86400000 + 500000).toISOString(), stepExpiresAt: null }),
           ext('sub-5', { rank: 2, state: 'expired',  responseToken: _token(), sentAt: new Date(BASE_NOW - 3 * 86400000 + 600000).toISOString(), respondedAt: null, stepExpiresAt: new Date(BASE_NOW - 3 * 86400000 + 1500000).toISOString() }),
+        ],
+      },
+
+      // ── EXTRA CURRENT-WEEK LIVE OFFERS — lift Erik + Karin to ≥5 live ──────
+      {
+        // gap-15 open_pool Matematik — Erik (sub-1) + Karin (staff-1) + sub-2 +
+        // staff-6 all contacted simultaneously (a 4th/5th live offer apiece).
+        id: 'offer-15', gapId: 'gap-15', mode: 'open_pool',
+        targets: [
+          stf('staff-1',{ rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-1',  { rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-2',  { rank: 3, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-6',{ rank: 4, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-16 open_pool Fysik (internal-first) — Karin + Erik contacted.
+        id: 'offer-16', gapId: 'gap-16', mode: 'open_pool',
+        targets: [
+          stf('staff-1',{ rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-1',  { rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-17 open_pool Matematik — broad pool: Erik + Karin + sub-2/3 +
+        // staff-6 contacted (5th/6th live offer for the defaults).
+        id: 'offer-17', gapId: 'gap-17', mode: 'open_pool',
+        targets: [
+          ext('sub-1',  { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-1',{ rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-2',  { rank: 3, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-3',  { rank: 4, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-6',{ rank: 5, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
         ],
       },
     ];
@@ -787,6 +830,120 @@
     // the read paths sort by date anyway).
     assignments.unshift(...historyAssignments);
 
+    // ── UPCOMING (FUTURE-DATED) CONFIRMED COVERS ───────────────────────────
+    // The 6-month history above is all PAST-dated. Without future covers the
+    // "Kommande pass / Mina vikariat" pages are empty. Seed a believable set
+    // of CONFIRMED cover_assignments dated BASE_NOW + 1..~21 days so whoever
+    // logs in (and the demo defaults Erik/Karin especially) sees a populated
+    // upcoming page. Each upcoming cover gets a MATCHING filled gap (so the
+    // booking carries period/group context and resolves a Lektionskollen plan
+    // where one exists) plus an offer_accepted audit pair so reliability and
+    // the lifetime fill-rate stay coherent.
+    //
+    // Determinism: dates/times/subjects are picked by index from BASE_NOW —
+    // no Date.now()/Math.random(). IDs use a dedicated gap-u-/asg-u-/offer-u-
+    // namespace so they never collide with the live or historical rows.
+    //
+    // Cost: future bookings have NOT been incurred yet, so costSek is 0 and
+    // externalComparableSek is 0 — they populate the upcoming pages without
+    // inflating spend or savings analytics. They still carry a distribution
+    // `mode` so offersByMode reflects them realistically.
+    const _UP_TIMES = [
+      { startTime: '08:20', endTime: '10:05', lessonCount: 2 },
+      { startTime: '10:25', endTime: '12:10', lessonCount: 2 },
+      { startTime: '11:15', endTime: '12:10', lessonCount: 1 },
+      { startTime: '13:10', endTime: '14:55', lessonCount: 2 },
+    ];
+    const _UP_MODES = ['cascade', 'open_pool', 'admin_assign'];
+    let _ug = 1, _ua = 1, _uo = 1;
+
+    // Define each upcoming cover plainly so the spread is easy to read.
+    // type: external_sub|staff · id · subject (must be in the actor's subjects)
+    // · group · dayAhead (days after BASE_NOW) · timeIdx (into _UP_TIMES).
+    const upcomingSpec = [
+      // Erik Karlsson (sub-1) — 5 upcoming, Matematik/Fysik across ~3 weeks.
+      { type: 'external_sub', id: 'sub-1', name: 'Erik Karlsson', subject: 'Matematik', group: '8B', dayAhead: 1,  timeIdx: 0 },
+      { type: 'external_sub', id: 'sub-1', name: 'Erik Karlsson', subject: 'Fysik',     group: '9A', dayAhead: 4,  timeIdx: 2 },
+      { type: 'external_sub', id: 'sub-1', name: 'Erik Karlsson', subject: 'Matematik', group: '7A', dayAhead: 8,  timeIdx: 1 },
+      { type: 'external_sub', id: 'sub-1', name: 'Erik Karlsson', subject: 'Fysik',     group: '9B', dayAhead: 14, timeIdx: 3 },
+      { type: 'external_sub', id: 'sub-1', name: 'Erik Karlsson', subject: 'Matematik', group: '8C', dayAhead: 20, timeIdx: 0 },
+      // Karin Holm (staff-1) — 4 upcoming internal covers, Matematik/Fysik.
+      { type: 'staff', id: 'staff-1', name: 'Karin Holm', subject: 'Matematik', group: '9B', dayAhead: 2,  timeIdx: 1 },
+      { type: 'staff', id: 'staff-1', name: 'Karin Holm', subject: 'Fysik',     group: '8A', dayAhead: 6,  timeIdx: 2 },
+      { type: 'staff', id: 'staff-1', name: 'Karin Holm', subject: 'Matematik', group: '7B', dayAhead: 11, timeIdx: 0 },
+      { type: 'staff', id: 'staff-1', name: 'Karin Holm', subject: 'Fysik',     group: '9C', dayAhead: 17, timeIdx: 3 },
+      // sub-2 Johan Berg (Matematik) — 2 upcoming.
+      { type: 'external_sub', id: 'sub-2', name: 'Johan Berg', subject: 'Matematik', group: '7C', dayAhead: 3,  timeIdx: 1 },
+      { type: 'external_sub', id: 'sub-2', name: 'Johan Berg', subject: 'Matematik', group: '9A', dayAhead: 12, timeIdx: 3 },
+      // sub-4 Maria Olsson (Engelska/Svenska) — 2 upcoming.
+      { type: 'external_sub', id: 'sub-4', name: 'Maria Olsson', subject: 'Engelska', group: '8A', dayAhead: 5,  timeIdx: 0 },
+      { type: 'external_sub', id: 'sub-4', name: 'Maria Olsson', subject: 'Svenska',  group: '9B', dayAhead: 15, timeIdx: 1 },
+      // sub-7 Peter Holm (Biologi/Kemi) — 2 upcoming.
+      { type: 'external_sub', id: 'sub-7', name: 'Peter Holm', subject: 'Biologi', group: '9A', dayAhead: 7,  timeIdx: 3 },
+      { type: 'external_sub', id: 'sub-7', name: 'Peter Holm', subject: 'Kemi',    group: '8B', dayAhead: 18, timeIdx: 0 },
+      // staff-3 Elin Sandberg (Biologi/Kemi/NO) — 2 upcoming internal.
+      { type: 'staff', id: 'staff-3', name: 'Elin Sandberg', subject: 'Biologi', group: '7A', dayAhead: 4,  timeIdx: 1 },
+      { type: 'staff', id: 'staff-3', name: 'Elin Sandberg', subject: 'NO',      group: '8C', dayAhead: 13, timeIdx: 2 },
+      // staff-6 Daniel Frost (Matematik/NO) — 2 upcoming internal.
+      { type: 'staff', id: 'staff-6', name: 'Daniel Frost', subject: 'Matematik', group: '9C', dayAhead: 6,  timeIdx: 0 },
+      { type: 'staff', id: 'staff-6', name: 'Daniel Frost', subject: 'NO',        group: '7B', dayAhead: 16, timeIdx: 3 },
+    ];
+
+    upcomingSpec.forEach((u, i) => {
+      const isExt = u.type === 'external_sub';
+      const t = _UP_TIMES[u.timeIdx % _UP_TIMES.length];
+      const dateMs = BASE_NOW + u.dayAhead * 86400000;
+      const date = _isoDay(dateMs);
+      const gapId = `gap-u-${_ug++}`;
+      const mode = _UP_MODES[i % _UP_MODES.length];
+      // confirmation timestamp: deterministic, before the cover date.
+      const confirmedMs = BASE_NOW + (u.dayAhead - 1) * 86400000 + (i % 6) * 3600000;
+      const confirmedIso = new Date(confirmedMs).toISOString();
+
+      // Matching FILLED gap so the booking carries period/group context.
+      gaps.push({
+        id: gapId, teacherName: 'Planerad frånvaro', teacherInitials: 'PF',
+        subject: u.subject, group: u.group, date,
+        startTime: t.startTime, endTime: t.endTime, lessonCount: t.lessonCount,
+        periodIds: [], status: 'filled', mode,
+        filledByType: u.type, filledById: u.id,
+        filledBySubId: isExt ? u.id : null,
+        filledBySubName: u.name,
+      });
+
+      // Confirmed cover_assignment — future-dated, ZERO cost (not yet incurred).
+      assignments.push({
+        id: `asg-u-${_ua++}`, gapId, date,
+        recipientType: u.type, recipientId: u.id,
+        subId: isExt ? u.id : null, subName: u.name,
+        subject: u.subject, costSek: 0, externalComparableSek: 0,
+        isExternal: isExt, isConfirmed: true, mode,
+        assignedAt: confirmedIso,
+      });
+
+      // Audit pair (offer_sent → offer_accepted) keeps the lifetime fill-rate
+      // and reliability coherent; lead time 8–30 min before confirmation.
+      const lead = 8 + (i * 5) % 23;
+      offers.push({
+        id: `offer-u-${_uo++}`, gapId, mode,
+        targets: [
+          (isExt ? ext : stf)(u.id, {
+            rank: 1, state: 'accepted', responseToken: _token(),
+            sentAt: new Date(confirmedMs - lead * 60000).toISOString(),
+            respondedAt: confirmedIso, stepExpiresAt: null,
+          }),
+        ],
+      });
+      auditLog.push(
+        { id: _logId(), ts: new Date(confirmedMs - lead * 60000).toISOString(), type: 'offer_sent',
+          gapId, recipientType: null, recipientId: null, subId: null,
+          detail: `Offer sent · ${u.subject} ${u.group}` },
+        { id: _logId(), ts: confirmedIso, type: 'offer_accepted',
+          gapId, recipientType: u.type, recipientId: u.id,
+          subId: isExt ? u.id : null, detail: `Accepted ${u.subject} ${u.group}` },
+      );
+    });
+
     // ── DEMO-WEEK EVENTS matching the seeded live offers above ─────────────
     // One offer_sent per gap that has an offer; fill/decline/expire events for
     // the resolved gaps. These feed avgMinutesToFill and the CURRENT-board
@@ -814,6 +971,9 @@
       { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-10', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Idrott 7C' },
       { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-11', recipientType: null, recipientId: null, subId: null, detail: 'Cascade started · Matematik 7A' },
       { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-12', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Kemi 9C' },
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-15', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Matematik 8A' },
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-16', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started (internal first) · Fysik 9C' },
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-17', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Matematik 7B' },
       { id: _logId(), ts: new Date(BASE_NOW - 36 * 3600000).toISOString(), type: 'admin_assigned', gapId: 'gap-13', recipientType: 'external_sub', recipientId: 'sub-10', subId: 'sub-10', detail: 'Admin assigned Lena Persson · Slöjd 8A' },
       { id: _logId(), ts: new Date(BASE_NOW - 3 * 86400000 + 500000).toISOString(),  type: 'offer_declined', gapId: 'gap-14', recipientType: 'external_sub', recipientId: 'sub-4', subId: 'sub-4', detail: 'Declined Engelska 9A' },
       { id: _logId(), ts: new Date(BASE_NOW - 3 * 86400000 + 1500000).toISOString(), type: 'target_expired', gapId: 'gap-14', recipientType: 'external_sub', recipientId: 'sub-5', subId: 'sub-5', detail: 'Step timeout' },
@@ -866,14 +1026,24 @@
   // ----------------------------------------------------------
   // STORE LOAD / PERSIST
   // ----------------------------------------------------------
+  // Bump SEED_VERSION whenever makeSeed()'s data changes — a stored store with
+  // an older version is discarded and reseeded on load, so a new deploy's demo
+  // data appears without anyone clicking "Återställ demo".
+  const SEED_VERSION = 18;
+
   let _store = _loadStore();
 
   function _loadStore() {
     try {
       const raw = localStorage.getItem(VK_STORE_KEY);
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed._seedVersion === SEED_VERSION) return parsed;
+        /* stale/older seed → fall through and reseed */
+      }
     } catch { /* fall through to seed */ }
     const seed = makeSeed();
+    seed._seedVersion = SEED_VERSION;
     try { localStorage.setItem(VK_STORE_KEY, JSON.stringify(seed)); } catch { /* ignore quota */ }
     return seed;
   }
@@ -2879,6 +3049,7 @@
     // ======================================================
     resetDemo() {
       _store = makeSeed();
+      _store._seedVersion = SEED_VERSION;
       _persist();
       // reseed the subjects store from the canonical list too
       _subjects = _canonicalSubjects();
