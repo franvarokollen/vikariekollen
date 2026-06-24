@@ -79,6 +79,14 @@
       poolLabelFvkInact:  'Inaktiv FVK',
       // new-sub note
       newSubPoolNote:  'Läggs till i VK-poolen.',
+      // reliability detail panel
+      reliabilityPanel:   'Pålitlighet',
+      relAccepted:        'Accepterade',
+      relDeclined:        'Tackade nej',
+      relNoResponse:      'Inget svar',
+      relLastActivity:    'Senaste aktivitet',
+      relNoHistory:       'Ingen historik än',
+      relNote:            'Pålitlighet beräknas från svarshistorik och styr matchningens rankning.',
     },
     en: {
       addSub:          '+ New substitute',
@@ -142,6 +150,14 @@
       poolLabelFvkInact:  'Inactive FVK',
       // new-sub note
       newSubPoolNote:  'Added to the VK pool.',
+      // reliability detail panel
+      reliabilityPanel:   'Reliability',
+      relAccepted:        'Accepted',
+      relDeclined:        'Declined',
+      relNoResponse:      'No response',
+      relLastActivity:    'Last activity',
+      relNoHistory:       'No history yet',
+      relNote:            'Reliability is calculated from response history and drives match ranking.',
     },
   };
 
@@ -412,11 +428,15 @@
         tabContent = renderWeeklyTab(sub.id);
       }
 
+      // Reliability panel
+      const reliabilityPanel = renderReliabilityPanel(sub.id);
+
       // Activations section
       const activationsSection = renderActivations(sub.id);
 
       return el('div', { className: 'detail-pane' },
         detailHeader,
+        reliabilityPanel,
         subTabBar,
         tabContent,
         activationsSection
@@ -580,6 +600,79 @@
       updateResetVisibility();
 
       return el('div', { className: 'pool-avail-tab' }, navRow, guide, gridWrap, footer);
+    }
+
+    // ----------------------------------------------------------
+    // RELIABILITY DETAIL PANEL
+    // ----------------------------------------------------------
+    function renderReliabilityPanel(subId) {
+      const detail = Adapter.getReliabilityDetail('external_sub', subId);
+      const score  = detail ? Math.round(Number(detail.score) || 0) : 0;
+      const total  = detail ? (Number(detail.total) || 0) : 0;
+
+      const panel = el('div', { className: 'pool-rel-panel' },
+        el('div', { className: 'pool-rel-heading' }, T('reliabilityPanel'))
+      );
+
+      if (!detail || total === 0) {
+        panel.appendChild(
+          el('div', { className: 'pool-rel-empty' }, T('relNoHistory'))
+        );
+        panel.appendChild(
+          el('div', { className: 'pool-rel-note' }, T('relNote'))
+        );
+        return panel;
+      }
+
+      // Score meter
+      const barClass = score >= 80 ? 'rel-hi' : score >= 50 ? 'rel-mid' : 'rel-lo';
+      const meterWrap = el('div', { className: 'pool-rel-meter' },
+        el('span', { className: 'pool-rel-score' }, String(score)),
+        el('div', { className: 'pool-rel-track' },
+          el('div', {
+            className: 'pool-rel-fill ' + barClass,
+            style: 'width:' + score + '%',
+          })
+        )
+      );
+      panel.appendChild(meterWrap);
+
+      // Breakdown chips: accepted / declined / no-response
+      const accepted   = Math.round(Number(detail.accepted)   || 0);
+      const declined   = Math.round(Number(detail.declined)   || 0);
+      const noResponse = Math.round(Number(detail.noResponse) || 0);
+
+      panel.appendChild(
+        el('div', { className: 'pool-rel-breakdown' },
+          el('div', { className: 'pool-rel-chip pool-rel-chip--green' },
+            el('span', { className: 'pool-rel-chip-val' }, String(accepted)),
+            el('span', { className: 'pool-rel-chip-lbl' }, T('relAccepted'))
+          ),
+          el('div', { className: 'pool-rel-chip pool-rel-chip--muted' },
+            el('span', { className: 'pool-rel-chip-val' }, String(declined)),
+            el('span', { className: 'pool-rel-chip-lbl' }, T('relDeclined'))
+          ),
+          el('div', { className: 'pool-rel-chip pool-rel-chip--amber' },
+            el('span', { className: 'pool-rel-chip-val' }, String(noResponse)),
+            el('span', { className: 'pool-rel-chip-lbl' }, T('relNoResponse'))
+          )
+        )
+      );
+
+      // Last activity
+      const lastIso  = detail.lastActivityIso || null;
+      const lastStr  = lastIso ? VK.fmt.date(lastIso) : '—';
+      panel.appendChild(
+        el('div', { className: 'pool-rel-last' },
+          T('relLastActivity') + ': ' + lastStr
+        )
+      );
+
+      panel.appendChild(
+        el('div', { className: 'pool-rel-note' }, T('relNote'))
+      );
+
+      return panel;
     }
 
     // ----------------------------------------------------------

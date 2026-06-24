@@ -591,3 +591,43 @@ set search_path = public
 as $$
   select public.admin_assign_cover(p_offer_id, 'external_sub', p_sub_id);
 $$;
+
+-- ----------------------------------------------------------------------------
+-- 6. Lektionskollen lesson-plan attach seam
+--
+--    Vikariekollen surfaces a lesson plan alongside each booked cover. In the
+--    prototype this is a MOCK HOOK: the Adapter resolves a plan at booking-read
+--    time by matching gap.subject (case-insensitive) against a local plan bank
+--    constant (_LEKTIONSKOLLEN_PLANS), returning { title, url, source:'Lektionskollen' }
+--    or null. No new VK table is required.
+--
+--    In production the seam works as follows:
+--
+--    1. Plan storage lives in the LEKTIONSKOLLEN system (its own schema/DB).
+--       Lektionskollen owns lektionskollen_plans { id, school_id, subject,
+--       group_pattern, period_pattern, title, url, author, ... }.
+--
+--    2. At booking/read time the Vikariekollen portal calls a Lektionskollen
+--       API (or a cross-schema RPC) keyed by (school_id, subject, [group],
+--       [period]) to resolve the best-matching plan. The resolved { title, url }
+--       is returned in-line alongside the cover_assignment — no copy is stored
+--       in VK's schema.
+--
+--    3. Optional: a denormalised lektionskollen_plan_id column on
+--       cover_assignments / cover_offers stores the winner so the link survives
+--       even if the Lektionskollen catalogue changes. Add it here when the
+--       integration is live:
+--
+--         alter table public.cover_assignments
+--           add column if not exists lektionskollen_plan_id uuid;
+--         alter table public.cover_offers
+--           add column if not exists lektionskollen_plan_id uuid;
+--
+--    4. The adapter shape the UI reads is stable:
+--         booking.lessonPlan  →  { title, url, source:'Lektionskollen' } | null
+--       Switching from the mock plan bank to a live API call is a one-file
+--       change: replace the body of _getLessonPlanForSubject() in adapter.js.
+--
+--    No table DDL is added here; this comment block documents the integration
+--    contract so the Lektionskollen team has a defined seam to fill in.
+-- ----------------------------------------------------------------------------

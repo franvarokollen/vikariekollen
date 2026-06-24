@@ -982,7 +982,10 @@
     return out;
   }
 
-  // Confirmed cover assignments for a given recipient, with gap + lessons.
+  // Confirmed cover assignments for a given recipient, with gap + lessons +
+  // lessonPlan (Lektionskollen auto-attach). The `lessons` array is preserved
+  // (period context); `lessonPlan` is the resolved Lektionskollen plan for the
+  // gap subject, or null when no plan is in the bank for that subject.
   function _coversForRecipient(type, id) {
     return _store.assignments
       .filter(a => {
@@ -995,11 +998,12 @@
         const lessons = gap && gap.periodIds
           ? gap.periodIds.map(pid => _lesson(pid)).filter(Boolean)
           : [];
-        return {
+        const booking = {
           ...JSON.parse(JSON.stringify(a)),
           gap: gap ? { ...JSON.parse(JSON.stringify(gap)), status: _deriveGapStatus(gap) } : null,
           lessons,
         };
+        return _attachLessonPlan(booking);
       })
       .sort((a, b) => (a.date).localeCompare(b.date));
   }
@@ -1099,6 +1103,92 @@
     next.stepExpiresAt = new Date(_simNow() + (_store.schoolSettings.stepMinutes || 15) * 60000).toISOString();
     _log('target_contacted', { gapId: gap.id, recipientType: _tType(next), recipientId: _tId(next), detail: 'Released rank ' + next.rank });
     return true;
+  }
+
+  // ----------------------------------------------------------
+  // LEKTIONSKOLLEN PLAN BANK (mock hook)
+  // ----------------------------------------------------------
+  // In production a booked cover_assignment links to a Lektionskollen plan
+  // (matched by subject/group/period) and the portal surfaces the link.
+  // The plan bank itself lives in the Lektionskollen system (its own DB +
+  // API); the adapter resolves a plan at booking-read time by subject match
+  // (case-insensitive, first match; optionally prefers a stage/group match).
+  // At integration: replace _LEKTIONSKOLLEN_PLANS + _getLessonPlanForSubject
+  // with a Lektionskollen API call (or a cached join via a lektionskollen_plans
+  // view seeded from the partner system). No new VK table required.
+  const _LEKTIONSKOLLEN_PLANS = [
+    // Matematik
+    { id: 'lkp-mat-1', subject: 'Matematik', title: 'Algebra — ekvationer åk 7–8', stage: '7-8', author: 'L. Håkansson', url: 'https://lektionskollen.example/plan/lkp-mat-1' },
+    { id: 'lkp-mat-2', subject: 'Matematik', title: 'Geometri — area och omkrets åk 9', stage: '9', author: 'B. Eriksson', url: 'https://lektionskollen.example/plan/lkp-mat-2' },
+    // Engelska
+    { id: 'lkp-eng-1', subject: 'Engelska', title: 'Reading comprehension — intermediate', stage: '7-8', author: 'P. Magnusson', url: 'https://lektionskollen.example/plan/lkp-eng-1' },
+    { id: 'lkp-eng-2', subject: 'Engelska', title: 'Creative writing workshop', stage: '9', author: 'A. Strand', url: 'https://lektionskollen.example/plan/lkp-eng-2' },
+    // Svenska
+    { id: 'lkp-sva-1', subject: 'Svenska', title: 'Argumenterande text — disposition och språk', stage: null, author: 'K. Lindström', url: 'https://lektionskollen.example/plan/lkp-sva-1' },
+    { id: 'lkp-sva-2', subject: 'Svenska', title: 'Skönlitteratur — lässtrategier', stage: null, author: 'M. Olsson', url: 'https://lektionskollen.example/plan/lkp-sva-2' },
+    // NO (samlingsämne)
+    { id: 'lkp-no-1', subject: 'NO', title: 'Ekosystem och kretslopp', stage: null, author: 'E. Sandberg', url: 'https://lektionskollen.example/plan/lkp-no-1' },
+    { id: 'lkp-no-2', subject: 'NO', title: 'Materia och atommodellen', stage: null, author: 'D. Frost', url: 'https://lektionskollen.example/plan/lkp-no-2' },
+    // Biologi
+    { id: 'lkp-bio-1', subject: 'Biologi', title: 'Cellens uppbyggnad och funktion', stage: null, author: 'K. Svensson', url: 'https://lektionskollen.example/plan/lkp-bio-1' },
+    { id: 'lkp-bio-2', subject: 'Biologi', title: 'Genetik — arv och miljö', stage: null, author: 'P. Holm', url: 'https://lektionskollen.example/plan/lkp-bio-2' },
+    // Idrott (covers 'Idrott' seed-compat short form)
+    { id: 'lkp-idr-1', subject: 'Idrott', title: 'Konditionspass — löpning och uthållighet', stage: null, author: 'L. Ek', url: 'https://lektionskollen.example/plan/lkp-idr-1' },
+    { id: 'lkp-idr-2', subject: 'Idrott och hälsa', title: 'Bollspel — teknisk träning', stage: null, author: 'O. Lund', url: 'https://lektionskollen.example/plan/lkp-idr-2' },
+    // Historia
+    { id: 'lkp-his-1', subject: 'Historia', title: 'Första världskriget — orsaker och följder', stage: null, author: 'J. Ek', url: 'https://lektionskollen.example/plan/lkp-his-1' },
+    { id: 'lkp-his-2', subject: 'Historia', title: 'Demokratins framväxt i Sverige', stage: null, author: 'J. Ek', url: 'https://lektionskollen.example/plan/lkp-his-2' },
+    // Kemi
+    { id: 'lkp-kem-1', subject: 'Kemi', title: 'Syror och baser — pH och reaktioner', stage: null, author: 'S. Nyström', url: 'https://lektionskollen.example/plan/lkp-kem-1' },
+    // Fysik
+    { id: 'lkp-fys-1', subject: 'Fysik', title: 'Rörelse och krafter — Newtons lagar', stage: null, author: 'E. Karlsson', url: 'https://lektionskollen.example/plan/lkp-fys-1' },
+    // Samhällskunskap / Samhälle (seed-compat)
+    { id: 'lkp-sam-1', subject: 'Samhällskunskap', title: 'EU — struktur och beslutsfattande', stage: null, author: 'J. Ek', url: 'https://lektionskollen.example/plan/lkp-sam-1' },
+    { id: 'lkp-sam-2', subject: 'Samhälle', title: 'Källkritik och media', stage: null, author: 'J. Ek', url: 'https://lektionskollen.example/plan/lkp-sam-2' },
+    // Bild
+    { id: 'lkp-bil-1', subject: 'Bild', title: 'Perspektivteckning — ett-punktsperspektiv', stage: null, author: 'S. Wik', url: 'https://lektionskollen.example/plan/lkp-bil-1' },
+    // Slöjd
+    { id: 'lkp-slj-1', subject: 'Slöjd', title: 'Träslöjd — ritning och planering', stage: null, author: 'S. Wik', url: 'https://lektionskollen.example/plan/lkp-slj-1' },
+    // Musik
+    { id: 'lkp-mus-1', subject: 'Musik', title: 'Rytm och notvärden — grundkurs', stage: null, author: 'T. Berg', url: 'https://lektionskollen.example/plan/lkp-mus-1' },
+    // Geografi
+    { id: 'lkp-geo-1', subject: 'Geografi', title: 'Klimatzoner och naturlandskap', stage: null, author: 'A. Nord', url: 'https://lektionskollen.example/plan/lkp-geo-1' },
+    // Religionskunskap
+    { id: 'lkp-rel-1', subject: 'Religionskunskap', title: 'Världsreligionerna — likheter och skillnader', stage: null, author: 'M. Dahl', url: 'https://lektionskollen.example/plan/lkp-rel-1' },
+    // Teknik
+    { id: 'lkp-tek-1', subject: 'Teknik', title: 'Konstruktion och hållfasthet', stage: null, author: 'D. Frost', url: 'https://lektionskollen.example/plan/lkp-tek-1' },
+    // Hälsa (seed-compat short form)
+    { id: 'lkp-hal-1', subject: 'Hälsa', title: 'Kost och hälsa — balanserad livsstil', stage: null, author: 'O. Lund', url: 'https://lektionskollen.example/plan/lkp-hal-1' },
+  ];
+
+  // Resolve a Lektionskollen plan for a subject (case-insensitive).
+  // Returns { title, url, source:'Lektionskollen' } or null.
+  // Optionally prefers a plan whose stage matches the group string (e.g. '9A'
+  // starts with '9'), falling back to the first subject match if no stage fits.
+  function _getLessonPlanForSubject(subject, group) {
+    if (typeof subject !== 'string' || !subject.trim()) return null;
+    const key = subject.trim().toLowerCase();
+    const matches = _LEKTIONSKOLLEN_PLANS.filter(p => p.subject.toLowerCase() === key);
+    if (!matches.length) return null;
+    // optionally prefer a stage match
+    let hit = null;
+    if (group && typeof group === 'string') {
+      const yearNum = (group.match(/\d+/) || [])[0];
+      if (yearNum) {
+        hit = matches.find(p => p.stage && p.stage.split('-').some(s => s.trim() === yearNum)) || null;
+      }
+    }
+    if (!hit) hit = matches[0];
+    return { title: hit.title, url: hit.url, source: 'Lektionskollen' };
+  }
+
+  // Enrich a booking (cover record) with the lessonPlan field.
+  // Mutates the passed-in object in place (it's already a copy) and returns it.
+  function _attachLessonPlan(booking) {
+    const subject = booking.subject || (booking.gap && booking.gap.subject) || null;
+    const group   = (booking.gap && booking.gap.group) || null;
+    booking.lessonPlan = _getLessonPlanForSubject(subject, group);
+    return booking;
   }
 
   // ----------------------------------------------------------
@@ -2351,6 +2441,85 @@
     getLesson(id) {
       const l = _lesson(id);
       return l ? JSON.parse(JSON.stringify(l)) : null;
+    },
+
+    // ======================================================
+    // LEKTIONSKOLLEN INTEGRATION
+    // ======================================================
+    // getLessonPlanForSubject(subject, group?) → { title, url, source } | null
+    //   Resolves a mock Lektionskollen plan for the given teaching subject.
+    //   Returns null when the subject has no plan in the bank (e.g. Rastvakt,
+    //   or a subject not yet covered). `group` is optional and used only to
+    //   prefer a stage-matching plan (e.g. '9A' → stage '9') over the first
+    //   subject match — both paths return the same { title, url, source } shape.
+    //   At integration: replace with a Lektionskollen API call keyed by subject
+    //   (and optionally group/period). The return shape is stable.
+    getLessonPlanForSubject(subject, group) {
+      return _getLessonPlanForSubject(subject, group);
+    },
+
+    // ======================================================
+    // RELIABILITY DETAIL
+    // ======================================================
+    // getReliabilityDetail(recipientType, recipientId) →
+    //   { score, accepted, declined, noResponse, total, lastActivityIso }
+    //
+    //   Works for recipientType ∈ { 'external_sub', 'staff' }.
+    //   Counts are drawn from the SAME audit-log scan that _reliabilityScore
+    //   uses, so score is always consistent with listSubs / listStaff /
+    //   matchCandidates reliabilityScore for the same recipient.
+    //
+    //   score        — same number as reliabilityScore (50 + acc*10 - dec*5 -
+    //                  noResp*3, clamped 0–100; staff with 0 history → 60).
+    //   accepted     — count of offer_accepted audit events for this recipient.
+    //   declined     — count of offer_declined events.
+    //   noResponse   — count of offer_no_response + target_expired events.
+    //   total        — accepted + declined + noResponse (scored events only).
+    //   lastActivityIso — ISO timestamp of the most recent relevant audit event
+    //                     (any of the three scored types), or null if none.
+    //
+    //   Returns null when the recipientType is unknown or the record doesn't exist.
+    getReliabilityDetail(recipientType, recipientId) {
+      if (!['external_sub', 'staff'].includes(recipientType)) return null;
+      // validate the record exists
+      const rec = _recipientRecord(recipientType, recipientId);
+      if (!rec) return null;
+
+      let accepted = 0, declined = 0, noResponse = 0;
+      let lastActivityIso = null;
+
+      for (const e of _store.auditLog) {
+        const eType = e.recipientType || (e.subId ? 'external_sub' : null);
+        const eId   = e.recipientId != null ? e.recipientId : e.subId;
+        if (eType !== recipientType || eId !== recipientId) continue;
+
+        const scored =
+          e.type === 'offer_accepted' ||
+          e.type === 'offer_declined' ||
+          e.type === 'offer_no_response' ||
+          e.type === 'target_expired';
+
+        if (!scored) continue;
+
+        if (e.type === 'offer_accepted')                                      accepted++;
+        else if (e.type === 'offer_declined')                                 declined++;
+        else if (e.type === 'offer_no_response' || e.type === 'target_expired') noResponse++;
+
+        if (!lastActivityIso || e.ts > lastActivityIso) lastActivityIso = e.ts;
+      }
+
+      const total = accepted + declined + noResponse;
+
+      // Mirror _reliabilityScore exactly (staff with zero history → 60).
+      let score;
+      if (recipientType === 'staff' && total === 0) {
+        score = 60;
+      } else {
+        score = 50 + accepted * 10 - declined * 5 - noResponse * 3;
+        score = Math.max(0, Math.min(100, score));
+      }
+
+      return { score, accepted, declined, noResponse, total, lastActivityIso };
     },
 
     // ======================================================

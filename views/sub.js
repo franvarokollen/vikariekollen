@@ -21,44 +21,48 @@
   // ----------------------------------------------------------
   const LOCAL = {
     sv: {
-      greeting:       'Hej',
-      greetingSub:    'Här ser du dina aktiva erbjudanden.',
-      noOffers:       'Inga erbjudanden just nu.',
-      respondBy:      'Svara senast',
-      noBookings:     'Inga inbokade pass.',
-      acceptBtn:      'Acceptera',
-      declineBtn:     'Tacka nej',
-      accepted:       'Du är bokad!',
-      acceptedNote:   'I produktion bekräftas detta via länken i SMS/e-post.',
-      declined:       'Du har tackat nej.',
-      queued:         'Du står på tur',
-      covers:         'Vikarierar för',
-      cost:           'Ersättning',
-      lessonPlan:     'Öppna lektionsplan',
-      lessonPlanSoon: 'Lektionsplan: Lektionskollen — kommer snart',
-      bookingsTitle:  'Kommande pass',
-      movedOnGroup:   'Tidigare',
-      waitTimeLine:   'Erbjudandet låg hos dig i {dur} innan det gick vidare.',
+      greeting:            'Hej',
+      greetingSub:         'Här ser du dina aktiva erbjudanden.',
+      noOffers:            'Inga erbjudanden just nu.',
+      respondBy:           'Svara senast',
+      noBookings:          'Inga inbokade pass.',
+      acceptBtn:           'Acceptera',
+      declineBtn:          'Tacka nej',
+      accepted:            'Du är bokad!',
+      acceptedNote:        'I produktion bekräftas detta via länken i SMS/e-post.',
+      declined:            'Du har tackat nej.',
+      queued:              'Du står på tur',
+      covers:              'Vikarierar för',
+      cost:                'Ersättning',
+      lessonPlanOpen:      'Öppna lektionsplan',
+      lessonPlanVia:       'via Lektionskollen',
+      lessonPlanToast:     'Öppnar lektionsplanen i Lektionskollen (ej kopplad i demon).',
+      lessonPlanNone:      'Lektionsplan: kommer via Lektionskollen',
+      bookingsTitle:       'Kommande pass',
+      movedOnGroup:        'Tidigare',
+      waitTimeLine:        'Erbjudandet låg hos dig i {dur} innan det gick vidare.',
     },
     en: {
-      greeting:       'Hi',
-      greetingSub:    'Here are your active offers.',
-      noOffers:       'No offers right now.',
-      respondBy:      'Respond by',
-      noBookings:     'No upcoming bookings.',
-      acceptBtn:      'Accept',
-      declineBtn:     'Decline',
-      accepted:       'You are booked!',
-      acceptedNote:   'In production this is confirmed via the SMS/e-mail link.',
-      declined:       'You have declined.',
-      queued:         'You are queued',
-      covers:         'Covering for',
-      cost:           'Pay',
-      lessonPlan:     'Open lesson plan',
-      lessonPlanSoon: 'Lesson plan: Lektionskollen — coming soon',
-      bookingsTitle:  'Upcoming bookings',
-      movedOnGroup:   'Past',
-      waitTimeLine:   'This offer was with you for {dur} before it moved on.',
+      greeting:            'Hi',
+      greetingSub:         'Here are your active offers.',
+      noOffers:            'No offers right now.',
+      respondBy:           'Respond by',
+      noBookings:          'No upcoming bookings.',
+      acceptBtn:           'Accept',
+      declineBtn:          'Decline',
+      accepted:            'You are booked!',
+      acceptedNote:        'In production this is confirmed via the SMS/e-mail link.',
+      declined:            'You have declined.',
+      queued:              'You are queued',
+      covers:              'Covering for',
+      cost:                'Pay',
+      lessonPlanOpen:      'Open lesson plan',
+      lessonPlanVia:       'via Lektionskollen',
+      lessonPlanToast:     'Opening lesson plan in Lektionskollen (not connected in the demo).',
+      lessonPlanNone:      'Lesson plan: coming via Lektionskollen',
+      bookingsTitle:       'Upcoming bookings',
+      movedOnGroup:        'Past',
+      waitTimeLine:        'This offer was with you for {dur} before it moved on.',
     },
   };
 
@@ -298,7 +302,7 @@
   // subBookings — "Mina pass"
   // ----------------------------------------------------------
   VK.views.subBookings = function subBookings(container, ctx) {
-    const { el, fmt, components, user, Adapter } = ctx;
+    const { el, fmt, components, user, Adapter } = ctx; // eslint-disable-line no-unused-vars
 
     const bookings = Adapter.getBookingsForSub(user.subId) || [];
 
@@ -367,7 +371,7 @@
       }
 
       // Lesson plan section
-      const lessonPlanDiv = buildLessonPlanSection(el, lessons);
+      const lessonPlanDiv = buildLessonPlanSection(el, components, booking);
       if (lessonPlanDiv) card.appendChild(lessonPlanDiv);
 
       container.appendChild(card);
@@ -753,29 +757,34 @@
 
   // ----------------------------------------------------------
   // Lesson plan widget (used by subBookings)
+  // booking.lessonPlan → { title, url, source:'Lektionskollen' } | null
   // ----------------------------------------------------------
-  function buildLessonPlanSection(el, lessons) {
-    if (!lessons || !lessons.length) return null;
+  function buildLessonPlanSection(el, components, booking) {
+    const plan = booking && booking.lessonPlan;
+    const wrap = el('div', { className: 'sub-lesson-plan' });
 
-    const withPlan    = lessons.filter(function (l) { return l.planUrl; });
-    const withoutPlan = lessons.filter(function (l) { return !l.planUrl; });
+    if (plan) {
+      const openBtn = el('button', {
+        className: 'btn sub-lesson-plan__open',
+        onclick: function () {
+          components.confirmToast(T('lessonPlanToast'), 'blue');
+        },
+      }, T('lessonPlanOpen'));
 
-    const wrap = el('div', { className: 'sub-lesson-plans' });
-
-    withPlan.forEach(function (l) {
       wrap.appendChild(
-        el('a', {
-          className: 'btn sub-btn-plan',
-          href: l.planUrl,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-        }, '📄 ' + T('lessonPlan') + (l.subject ? ' — ' + l.subject : ''))
+        el('div', { className: 'sub-lesson-plan__row' },
+          el('span', { className: 'sub-lesson-plan__icon' }, '📄'),
+          el('div', { className: 'sub-lesson-plan__body' },
+            el('span', { className: 'sub-lesson-plan__title' }, plan.title),
+            el('span', { className: 'sub-lesson-plan__source' }, T('lessonPlanVia')),
+            el('span', { className: 'sub-lesson-plan__url' }, plan.url)
+          ),
+          openBtn
+        )
       );
-    });
-
-    if (withoutPlan.length) {
+    } else {
       wrap.appendChild(
-        el('div', { className: 'sub-lesson-plan-soon' }, '🔗 ' + T('lessonPlanSoon'))
+        el('div', { className: 'sub-lesson-plan__none' }, T('lessonPlanNone'))
       );
     }
 

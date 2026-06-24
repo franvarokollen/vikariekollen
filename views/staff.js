@@ -22,46 +22,50 @@
   // ----------------------------------------------------------
   const LOCAL = {
     sv: {
-      greeting:         'Hej',
-      greetingSub:      'Här ser du förfrågningar om vikariat.',
-      noRequests:       'Inga förfrågningar just nu.',
-      noCovers:         'Inga inbokade pass.',
-      acceptBtn:        'Acceptera',
-      declineBtn:       'Tacka nej',
-      accepted:         'Du täcker passet!',
-      acceptedNote:     'I produktion bekräftas detta via notis (SMS/e-post/push).',
-      declined:         'Du har tackat nej.',
-      queued:           'Du står på tur',
-      covers:           'Vikarierar för',
-      lessonPlan:       'Öppna lektionsplan',
-      lessonPlanSoon:   'Lektionsplan: Lektionskollen — kommer snart',
-      workloadHeading:  'Din täckningstjänst denna månad',
-      workloadNote:     'Skolan fördelar täckningsuppdrag jämnt — den här vyn visar hur mycket du tagit på dig.',
-      coversThisMonth:  'Pass denna månad',
-      limitLabel:       'Av {limit} möjliga',
-      hoursLabel:       'timmar denna månad',
-      noWorkload:       'Inga vikariat registrerade denna månad.',
+      greeting:            'Hej',
+      greetingSub:         'Här ser du förfrågningar om vikariat.',
+      noRequests:          'Inga förfrågningar just nu.',
+      noCovers:            'Inga inbokade pass.',
+      acceptBtn:           'Acceptera',
+      declineBtn:          'Tacka nej',
+      accepted:            'Du täcker passet!',
+      acceptedNote:        'I produktion bekräftas detta via notis (SMS/e-post/push).',
+      declined:            'Du har tackat nej.',
+      queued:              'Du står på tur',
+      covers:              'Vikarierar för',
+      lessonPlanOpen:      'Öppna lektionsplan',
+      lessonPlanVia:       'via Lektionskollen',
+      lessonPlanToast:     'Öppnar lektionsplanen i Lektionskollen (ej kopplad i demon).',
+      lessonPlanNone:      'Lektionsplan: kommer via Lektionskollen',
+      workloadHeading:     'Din täckningstjänst denna månad',
+      workloadNote:        'Skolan fördelar täckningsuppdrag jämnt — den här vyn visar hur mycket du tagit på dig.',
+      coversThisMonth:     'Pass denna månad',
+      limitLabel:          'Av {limit} möjliga',
+      hoursLabel:          'timmar denna månad',
+      noWorkload:          'Inga vikariat registrerade denna månad.',
     },
     en: {
-      greeting:         'Hi',
-      greetingSub:      'Here are your cover requests.',
-      noRequests:       'No requests right now.',
-      noCovers:         'No upcoming covers.',
-      acceptBtn:        'Accept',
-      declineBtn:       'Decline',
-      accepted:         'You are covering this lesson!',
-      acceptedNote:     'In production this is confirmed via SMS/e-mail/push.',
-      declined:         'You have declined.',
-      queued:           'You are queued',
-      covers:           'Covering for',
-      lessonPlan:       'Open lesson plan',
-      lessonPlanSoon:   'Lesson plan: Lektionskollen — coming soon',
-      workloadHeading:  'Your cover load this month',
-      workloadNote:     'The school distributes cover fairly — this view shows how much you have taken on.',
-      coversThisMonth:  'Covers this month',
-      limitLabel:       'Of {limit} allowed',
-      hoursLabel:       'hours this month',
-      noWorkload:       'No covers recorded this month.',
+      greeting:            'Hi',
+      greetingSub:         'Here are your cover requests.',
+      noRequests:          'No requests right now.',
+      noCovers:            'No upcoming covers.',
+      acceptBtn:           'Accept',
+      declineBtn:          'Decline',
+      accepted:            'You are covering this lesson!',
+      acceptedNote:        'In production this is confirmed via SMS/e-mail/push.',
+      declined:            'You have declined.',
+      queued:              'You are queued',
+      covers:              'Covering for',
+      lessonPlanOpen:      'Open lesson plan',
+      lessonPlanVia:       'via Lektionskollen',
+      lessonPlanToast:     'Opening lesson plan in Lektionskollen (not connected in the demo).',
+      lessonPlanNone:      'Lesson plan: coming via Lektionskollen',
+      workloadHeading:     'Your cover load this month',
+      workloadNote:        'The school distributes cover fairly — this view shows how much you have taken on.',
+      coversThisMonth:     'Covers this month',
+      limitLabel:          'Of {limit} allowed',
+      hoursLabel:          'hours this month',
+      noWorkload:          'No covers recorded this month.',
     },
   };
 
@@ -93,29 +97,34 @@
 
   // ----------------------------------------------------------
   // Lesson plan section (mirrors sub.js buildLessonPlanSection)
+  // cover.lessonPlan → { title, url, source:'Lektionskollen' } | null
   // ----------------------------------------------------------
-  function buildLessonPlanSection(el, lessons) {
-    if (!lessons || !lessons.length) return null;
+  function buildLessonPlanSection(el, components, cover) {
+    const plan = cover && cover.lessonPlan;
+    const wrap = el('div', { className: 'staff-lesson-plan' });
 
-    const withPlan    = lessons.filter(function (l) { return l.planUrl; });
-    const withoutPlan = lessons.filter(function (l) { return !l.planUrl; });
+    if (plan) {
+      const openBtn = el('button', {
+        className: 'btn staff-lesson-plan__open',
+        onclick: function () {
+          components.confirmToast(T('lessonPlanToast'), 'blue');
+        },
+      }, T('lessonPlanOpen'));
 
-    const wrap = el('div', { className: 'staff-lesson-plans' });
-
-    withPlan.forEach(function (l) {
       wrap.appendChild(
-        el('a', {
-          className: 'btn staff-btn-plan',
-          href: l.planUrl,
-          target: '_blank',
-          rel: 'noopener noreferrer',
-        }, '📄 ' + T('lessonPlan') + (l.subject ? ' — ' + l.subject : ''))
+        el('div', { className: 'staff-lesson-plan__row' },
+          el('span', { className: 'staff-lesson-plan__icon' }, '📄'),
+          el('div', { className: 'staff-lesson-plan__body' },
+            el('span', { className: 'staff-lesson-plan__title' }, plan.title),
+            el('span', { className: 'staff-lesson-plan__source' }, T('lessonPlanVia')),
+            el('span', { className: 'staff-lesson-plan__url' }, plan.url)
+          ),
+          openBtn
+        )
       );
-    });
-
-    if (withoutPlan.length) {
+    } else {
       wrap.appendChild(
-        el('div', { className: 'staff-lesson-plan-soon' }, '🔗 ' + T('lessonPlanSoon'))
+        el('div', { className: 'staff-lesson-plan__none' }, T('lessonPlanNone'))
       );
     }
 
@@ -250,7 +259,7 @@
   // staffCovers — "Mina vikariat"
   // ----------------------------------------------------------
   VK.views.staffCovers = function staffCovers(container, ctx) {
-    const { el, components, user, Adapter } = ctx;
+    const { el, components, user, Adapter } = ctx; // eslint-disable-line no-unused-vars
 
     const covers = (user && user.staffId)
       ? (Adapter.getCoversForStaff(user.staffId) || [])
@@ -311,7 +320,7 @@
       }
 
       // Lesson plan section (no cost line for internal staff)
-      const planSection = buildLessonPlanSection(el, lessons);
+      const planSection = buildLessonPlanSection(el, components, cover);
       if (planSection) card.appendChild(planSection);
 
       container.appendChild(card);

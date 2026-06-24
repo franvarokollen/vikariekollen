@@ -608,6 +608,128 @@ tbody tr:nth-child(odd) .slot:hover     { background: #f4efe8; }
 }
 
 /* ============================================================
+   RELIABILITY DETAIL PANEL (in the detail pane)
+   ============================================================ */
+
+.pool-rel-panel {
+  border-bottom: 1px solid var(--card-border);
+  padding: 12px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  background: var(--page-bg, #faf8f5);
+}
+
+.pool-rel-heading {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+/* Score + meter row */
+.pool-rel-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pool-rel-score {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--navy);
+  line-height: 1;
+  letter-spacing: -1px;
+  min-width: 38px;
+  text-align: right;
+}
+
+.pool-rel-track {
+  flex: 1;
+  height: 8px;
+  background: #e8e3dc;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.pool-rel-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .3s ease;
+}
+.pool-rel-fill.rel-hi  { background: var(--green,  #16a34a); }
+.pool-rel-fill.rel-mid { background: var(--blue,   #0F71F6); }
+.pool-rel-fill.rel-lo  { background: var(--amber-text, #b45309); }
+
+/* Breakdown chips row */
+.pool-rel-breakdown {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pool-rel-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 8px;
+  min-width: 60px;
+  border: 1px solid transparent;
+}
+
+.pool-rel-chip--green {
+  background: var(--green-bg, #f0fdf4);
+  border-color: var(--green-border, #bbf7d0);
+  color: var(--green-text, #166534);
+}
+.pool-rel-chip--muted {
+  background: #f0ece7;
+  border-color: var(--card-border);
+  color: var(--muted);
+}
+.pool-rel-chip--amber {
+  background: var(--amber-bg, #fffbeb);
+  border-color: var(--amber-border, #f0d78a);
+  color: var(--amber-text, #b45309);
+}
+
+.pool-rel-chip-val {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pool-rel-chip-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Last activity + note */
+.pool-rel-last {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pool-rel-empty {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.pool-rel-note {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+  border-top: 1px solid var(--card-border);
+  padding-top: 6px;
+}
+
+/* ============================================================
    RESPONSIVE — stack panes below ~680px
    ============================================================ */
 
