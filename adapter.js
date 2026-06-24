@@ -359,7 +359,7 @@
     // free-period rule has a visible effect.
     const staffSchedules = {
       'staff-1': [
-        { date: '2026-06-24', startTime: '10:25', endTime: '12:10' }, // busy gap-2 slot, free gap-1
+        { date: '2026-06-24', startTime: '08:20', endTime: '10:05' }, // free at gap-6 (11:15) and gap-3 (13:10) today
         { date: '2026-06-25', startTime: '08:20', endTime: '10:05' },
       ],
       'staff-2': [
@@ -434,29 +434,47 @@
       { id: 'les-5', date: '2026-06-22', subject: 'Engelska',  group: '8A', startTime: '08:20', endTime: '10:05', teacherName: 'Petra Holm',     planUrl: null },
     ];
 
-    // Gaps — a realistic week in mixed states, now FULLER so the board reads
-    // like a busy live week and EVERY demo sub/staff has multiple live offers.
-    // The original 7 gaps keep the coordinator-board narrative (a mid-flight
-    // cascade, an open_pool, an admin-filled external, an internal fill, an
-    // expired cascade, an unsent duty). gaps 8–14 add MORE live offers:
-    //   - two extra open_pool gaps on common subjects (Matematik, Engelska,
-    //     Idrott) so many subs get SIMULTANEOUS offers (open_pool = contact all)
-    //   - an extra mid-flight cascade contacting internal staff + a sub
-    //   - a couple more filled/expired so the board stays varied
-    // gap-6 is seeded FILLED BY INTERNAL STAFF so savings analytics are
-    // non-zero out of the box. filledByType records which pool filled it.
+    // Gaps — the headline board reads as SIX TEACHERS ABSENT TODAY (all dated
+    // BASE_NOW = 2026-06-24), each demonstrating a DIFFERENT cover mechanism so
+    // the demo shows off every option in one screen:
+    //   gap-1 ADMIN ASSIGN   — open_unsent, mode admin_assign (coordinator picks)
+    //   gap-2 OPEN POOL      — open_pool, all matched contacted (first-accept)
+    //   gap-3 CASCADE        — mid-flight: rank1 contacted, rank2+ queued
+    //   gap-4 FILLED         — already covered (external write-back shown)
+    //   gap-6 INTERNAL-FIRST — teaching gap whose offer goes to INTERNAL STAFF
+    //                          first (open_pool to staff + the qualified extern)
+    //   gap-7 DUTY           — non-teaching duty (Rastvakt) → soft qualification
+    //                          (everyone qualified)
+    // Times span a normal school day 08:00–16:00 with varied subjects/classes.
+    // gap-5 stays as an EXTRA expired-today gap (state variety; not one of the
+    // six headline mechanisms). gaps 8–14 are the REST-OF-WEEK live board that
+    // fans MULTIPLE simultaneous offers onto each demo sub/staff (so Erik and
+    // Karin each have ≥3 live offers) and keeps filled/expired variety.
+    //
+    // gap-6 (internal-first) and the historical internal fills keep the savings
+    // analytics non-zero out of the box. filledByType records which pool filled.
     const gaps = [
-      { id: 'gap-1', teacherName: 'Anna Lindqvist', teacherInitials: 'AL', subject: 'Matematik', group: '8B', date: '2026-06-24', startTime: '08:20', endTime: '10:05', lessonCount: 2, periodIds: ['les-1'], status: 'cascade',     mode: 'cascade',      filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
-      { id: 'gap-2', teacherName: 'Per Magnusson',  teacherInitials: 'PM', subject: 'Engelska',  group: '7A', date: '2026-06-24', startTime: '10:25', endTime: '12:10', lessonCount: 2, periodIds: ['les-2'], status: 'open_unsent', mode: 'cascade',      filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
-      { id: 'gap-3', teacherName: 'Karin Svensson', teacherInitials: 'KS', subject: 'Biologi',   group: '9A', date: '2026-06-25', startTime: '13:10', endTime: '14:55', lessonCount: 2, periodIds: ['les-3'], status: 'open_pool',   mode: 'open_pool',    filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
-      { id: 'gap-4', teacherName: 'Jonas Ek',       teacherInitials: 'JE', subject: 'Idrott',    group: '9C', date: '2026-06-23', startTime: '09:15', endTime: '11:00', lessonCount: 2, periodIds: ['les-4'], status: 'filled',      mode: 'admin_assign', filledByType: 'external_sub', filledById: 'sub-9',   filledBySubId: 'sub-9',  filledBySubName: 'Lars Ek' },
-      { id: 'gap-5', teacherName: 'Petra Holm',     teacherInitials: 'PH', subject: 'Engelska',  group: '8A', date: '2026-06-22', startTime: '08:20', endTime: '10:05', lessonCount: 2, periodIds: ['les-5'], status: 'expired',     mode: 'cascade',      filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
-      { id: 'gap-6', teacherName: 'Nils Berg',      teacherInitials: 'NB', subject: 'Historia',  group: '7B', date: '2026-06-22', startTime: '10:25', endTime: '12:10', lessonCount: 2, periodIds: [],        status: 'filled',      mode: 'admin_assign', filledByType: 'staff',        filledById: 'staff-5', filledBySubId: null,     filledBySubName: 'Johanna Ek' },
-      // a NON-TEACHING DUTY gap (Rastvakt) — no subject qualification needed,
-      // so every candidate matches as qualified:true.
-      { id: 'gap-7', teacherName: 'Eva Strand',     teacherInitials: 'ES', subject: 'Rastvakt',  group: '—',  date: '2026-06-24', startTime: '13:10', endTime: '14:00', lessonCount: 1, periodIds: [],        status: 'open_unsent', mode: 'cascade',      filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
+      // ── SIX TEACHERS ABSENT TODAY (2026-06-24) — one per mechanism ──────────
+      // 1. ADMIN ASSIGN — no offer sent; coordinator assigns directly.
+      { id: 'gap-1', teacherName: 'Anna Lindqvist', teacherInitials: 'AL', subject: 'Matematik', group: '8B', date: '2026-06-24', startTime: '08:20', endTime: '10:05', lessonCount: 2, periodIds: ['les-1'], status: 'open_unsent', mode: 'admin_assign', filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
+      // 2. OPEN POOL — offer sent, ALL matched contacted (first-accept wins).
+      { id: 'gap-2', teacherName: 'Per Magnusson',  teacherInitials: 'PM', subject: 'Engelska',  group: '7A', date: '2026-06-24', startTime: '10:25', endTime: '12:10', lessonCount: 2, periodIds: ['les-2'], status: 'open_pool',   mode: 'open_pool',    filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
+      // 3. CASCADE — mid-flight (internal-first): rank1 (Karin) contacted, rank2+ (Erik, sub-2) queued.
+      { id: 'gap-3', teacherName: 'Greta Sund',     teacherInitials: 'GS', subject: 'Matematik', group: '9B', date: '2026-06-24', startTime: '13:10', endTime: '14:55', lessonCount: 2, periodIds: [],        status: 'cascade',     mode: 'cascade',      filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
+      // 4. FILLED — already covered by an external sub (write-back shown).
+      { id: 'gap-4', teacherName: 'Jonas Ek',       teacherInitials: 'JE', subject: 'Idrott',    group: '9C', date: '2026-06-24', startTime: '08:20', endTime: '09:10', lessonCount: 1, periodIds: [],        status: 'filled',      mode: 'admin_assign', filledByType: 'external_sub', filledById: 'sub-9',   filledBySubId: 'sub-9',  filledBySubName: 'Lars Ek' },
+      // (extra) expired-today cascade — pool exhausted; state variety, NOT one
+      // of the six headline mechanisms.
+      { id: 'gap-5', teacherName: 'Petra Holm',     teacherInitials: 'PH', subject: 'Svenska',   group: '8A', date: '2026-06-24', startTime: '14:10', endTime: '15:00', lessonCount: 1, periodIds: [],        status: 'expired',     mode: 'cascade',      filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
+      // 6. INTERNAL-FIRST — Fysik gap whose offer goes to INTERNAL STAFF first
+      //    (open_pool: staff-1 Karin + the qualified external Erik contacted).
+      { id: 'gap-6', teacherName: 'Nils Berg',      teacherInitials: 'NB', subject: 'Fysik',     group: '9A', date: '2026-06-24', startTime: '11:15', endTime: '12:10', lessonCount: 1, periodIds: [],        status: 'open_pool',   mode: 'open_pool',    filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
+      // 5. DUTY — a NON-TEACHING DUTY gap (Rastvakt). No subject qualification
+      //    needed, so every contacted candidate matches as qualified:true. Sent
+      //    as open_pool to a mix of subs + staff to show soft-qualification.
+      { id: 'gap-7', teacherName: 'Eva Strand',     teacherInitials: 'ES', subject: 'Rastvakt',  group: '—',  date: '2026-06-24', startTime: '15:10', endTime: '16:00', lessonCount: 1, periodIds: [],        status: 'open_pool',   mode: 'open_pool',    filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
 
-      // ── EXTRA LIVE GAPS (this week) — drive MULTIPLE offers per sub/staff ──
+      // ── REST-OF-WEEK LIVE GAPS — fan MULTIPLE offers per sub/staff ──────────
       // gap-8 open_pool Matematik Thu PM — contacts every Matematik-capable
       // sub + coverable staff at once (sub-1/2/3, staff-1/6).
       { id: 'gap-8',  teacherName: 'Greta Sund',    teacherInitials: 'GS', subject: 'Matematik', group: '9B', date: '2026-06-25', startTime: '10:25', endTime: '12:10', lessonCount: 2, periodIds: [], status: 'open_pool', mode: 'open_pool', filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
@@ -479,10 +497,14 @@
 
     // Offers + targets. One offer per gap that has been sent or filled.
     // Targets carry rank + state + token + timestamps.
-    // gap-1: cascade mid-flight — rank1 contacted (awaiting), rest queued.
-    // gap-3: open_pool — all contacted.
-    // gap-4: filled via admin_assign — winner accepted, other superseded.
-    // gap-5: expired cascade — all targets declined/expired (pool exhausted).
+    // The SIX TODAY headline gaps map to the six mechanisms:
+    //   gap-1: ADMIN ASSIGN — NO offer (open_unsent; coordinator assigns live).
+    //   gap-2: OPEN POOL    — all matched Engelska candidates contacted.
+    //   gap-3: CASCADE      — mid-flight: rank1 (Erik) contacted, rest queued.
+    //   gap-4: FILLED       — external admin_assign accepted (write-back).
+    //   gap-5: EXPIRED      — cascade pool exhausted (declined/expired).
+    //   gap-6: INTERNAL-FIRST — open_pool to staff (Karin) + qualified extern (Erik).
+    //   gap-7: DUTY         — open_pool Rastvakt; mixed subs + staff contacted.
     // Targets carry the POLYMORPHIC pair recipientType/recipientId.
     // `subId` is kept ONLY on external targets as a read-compat alias.
     const baseSent = new Date(BASE_NOW - 30 * 60000).toISOString(); // 30 min before base
@@ -492,41 +514,61 @@
     const live = new Date(BASE_NOW - 20 * 60000).toISOString();   // contacted ~20 min ago
     const stepEnd = new Date(BASE_NOW + 8 * 60000).toISOString(); // cascade step still open
     const offers = [
+      // gap-1 ADMIN ASSIGN — intentionally has NO offer so the board shows an
+      // open_unsent admin_assign gap the coordinator picks directly.
       {
-        // gap-1 cascade mid-flight: an internal staff member ranked first
-        // (internal_first default), an external queued behind.
-        id: 'offer-1', gapId: 'gap-1', mode: 'cascade',
+        // gap-2 OPEN POOL Engelska — every matched Engelska candidate contacted
+        // at once (subs 4/5 + staff-2); first to accept wins.
+        id: 'offer-2', gapId: 'gap-2', mode: 'open_pool',
         targets: [
-          stf('staff-1', { rank: 1, state: 'contacted', responseToken: _token(), sentAt: baseSent, respondedAt: null, stepExpiresAt: new Date(BASE_NOW + 5 * 60000).toISOString() }),
-          ext('sub-1',   { rank: 2, state: 'queued',    responseToken: _token(), sentAt: null,      respondedAt: null, stepExpiresAt: null }),
-          ext('sub-2',   { rank: 3, state: 'queued',    responseToken: _token(), sentAt: null,      respondedAt: null, stepExpiresAt: null }),
+          ext('sub-4',  { rank: 1, state: 'contacted', responseToken: _token(), sentAt: baseSent, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-5',  { rank: 2, state: 'contacted', responseToken: _token(), sentAt: baseSent, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-2',{ rank: 3, state: 'contacted', responseToken: _token(), sentAt: baseSent, respondedAt: null, stepExpiresAt: null }),
         ],
       },
       {
-        id: 'offer-3', gapId: 'gap-3', mode: 'open_pool',
+        // gap-3 CASCADE Matematik mid-flight (internal-first default): Karin
+        // (staff-1) contacted rank1 with an open step; Erik (sub-1) + sub-2
+        // queued behind, so the cascade will reach Erik next if Karin passes.
+        id: 'offer-3', gapId: 'gap-3', mode: 'cascade',
         targets: [
-          ext('sub-7', { rank: 1, state: 'contacted', responseToken: _token(), sentAt: baseSent, respondedAt: null, stepExpiresAt: null }),
-          ext('sub-8', { rank: 2, state: 'contacted', responseToken: _token(), sentAt: baseSent, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-1', { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: stepEnd }),
+          ext('sub-1',   { rank: 2, state: 'queued',    responseToken: _token(), sentAt: null, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-2',   { rank: 3, state: 'queued',    responseToken: _token(), sentAt: null, respondedAt: null, stepExpiresAt: null }),
         ],
       },
       {
         id: 'offer-4', gapId: 'gap-4', mode: 'admin_assign',
         targets: [
-          ext('sub-9', { rank: 1, state: 'accepted', responseToken: _token(), sentAt: null, respondedAt: new Date(BASE_NOW - 86400000).toISOString(), stepExpiresAt: null }),
+          ext('sub-9', { rank: 1, state: 'accepted', responseToken: _token(), sentAt: null, respondedAt: new Date(BASE_NOW - 2 * 3600000).toISOString(), stepExpiresAt: null }),
         ],
       },
       {
+        // gap-5 EXPIRED cascade today — both contacted candidates let it lapse.
         id: 'offer-5', gapId: 'gap-5', mode: 'cascade',
         targets: [
-          ext('sub-4', { rank: 1, state: 'declined', responseToken: _token(), sentAt: new Date(BASE_NOW - 2 * 86400000).toISOString(), respondedAt: new Date(BASE_NOW - 2 * 86400000 + 600000).toISOString(), stepExpiresAt: null }),
-          ext('sub-5', { rank: 2, state: 'expired',  responseToken: _token(), sentAt: new Date(BASE_NOW - 2 * 86400000 + 700000).toISOString(), respondedAt: null, stepExpiresAt: new Date(BASE_NOW - 2 * 86400000 + 1600000).toISOString() }),
+          ext('sub-4', { rank: 1, state: 'declined', responseToken: _token(), sentAt: new Date(BASE_NOW - 3 * 3600000).toISOString(), respondedAt: new Date(BASE_NOW - 3 * 3600000 + 600000).toISOString(), stepExpiresAt: null }),
+          ext('sub-5', { rank: 2, state: 'expired',  responseToken: _token(), sentAt: new Date(BASE_NOW - 3 * 3600000 + 700000).toISOString(), respondedAt: null, stepExpiresAt: new Date(BASE_NOW - 90 * 60000).toISOString() }),
         ],
       },
       {
-        // gap-6 filled by an INTERNAL staff member (admin_assign).
-        id: 'offer-6', gapId: 'gap-6', mode: 'admin_assign',
+        // gap-6 INTERNAL-FIRST Fysik open_pool — the offer goes to INTERNAL
+        // staff first (Karin, staff-1) alongside the one qualified external
+        // (Erik, sub-1). Both contacted; shows internal cover front and centre.
+        id: 'offer-6', gapId: 'gap-6', mode: 'open_pool',
         targets: [
-          stf('staff-5', { rank: 1, state: 'accepted', responseToken: _token(), sentAt: null, respondedAt: new Date(BASE_NOW - 2 * 86400000).toISOString(), stepExpiresAt: null }),
+          stf('staff-1', { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-1',   { rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-7 DUTY (Rastvakt) open_pool — a duty needs no qualification, so a
+        // mixed pool of subs + staff is contacted, all qualified:true.
+        id: 'offer-7', gapId: 'gap-7', mode: 'open_pool',
+        targets: [
+          ext('sub-2',  { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-8',  { rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-4',{ rank: 3, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
         ],
       },
 
@@ -597,15 +639,16 @@
       },
     ];
 
-    // Assignments (write-back records) — one per filled gap.
+    // Assignments (write-back records) — one per filled gap on the CURRENT board.
     // recipientType/recipientId are canonical; subId kept for externals.
-    // gap-4 external (Lars Ek @ 305/h × 2), gap-6 internal (Johanna Ek,
-    // internal cost 0 but we record the external comparison rate so the
-    // savings hook can compute "what an external would have cost").
+    // gap-4 external (Lars Ek @ 305/h × 1, the FILLED-today gap), gap-13 external
+    // (Lena Persson, earlier this week). Internal-cover savings come from the
+    // ~6-month history below (coverable staff with internalRate 0 + an external
+    // comparison rate), so the savings hook stays non-zero out of the box even
+    // though gap-6 is now a LIVE internal-first offer rather than a filled gap.
     const assignments = [
-      { id: 'asg-1', gapId: 'gap-4',  date: '2026-06-23', recipientType: 'external_sub', recipientId: 'sub-9',   subId: 'sub-9',  subName: 'Lars Ek',     subject: 'Idrott',   costSek: 305 * 2, externalComparableSek: 305 * 2, isExternal: true,  isConfirmed: true, assignedAt: new Date(BASE_NOW - 86400000).toISOString() },
-      { id: 'asg-2', gapId: 'gap-6',  date: '2026-06-22', recipientType: 'staff',        recipientId: 'staff-5', subId: null,     subName: 'Johanna Ek',  subject: 'Historia', costSek: 0,       externalComparableSek: 300 * 2, isExternal: false, isConfirmed: true, assignedAt: new Date(BASE_NOW - 2 * 86400000).toISOString() },
-      { id: 'asg-3', gapId: 'gap-13', date: '2026-06-23', recipientType: 'external_sub', recipientId: 'sub-10',  subId: 'sub-10', subName: 'Lena Persson', subject: 'Slöjd',   costSek: 270 * 2, externalComparableSek: 270 * 2, isExternal: true,  isConfirmed: true, assignedAt: new Date(BASE_NOW - 36 * 3600000).toISOString() },
+      { id: 'asg-1', gapId: 'gap-4',  date: '2026-06-24', recipientType: 'external_sub', recipientId: 'sub-9',   subId: 'sub-9',  subName: 'Lars Ek',     subject: 'Idrott', costSek: 305 * 1, externalComparableSek: 305 * 1, isExternal: true, isConfirmed: true, mode: 'admin_assign', assignedAt: new Date(BASE_NOW - 2 * 3600000).toISOString() },
+      { id: 'asg-3', gapId: 'gap-13', date: '2026-06-23', recipientType: 'external_sub', recipientId: 'sub-10',  subId: 'sub-10', subName: 'Lena Persson', subject: 'Slöjd',  costSek: 270 * 2, externalComparableSek: 270 * 2, isExternal: true, isConfirmed: true, mode: 'admin_assign', assignedAt: new Date(BASE_NOW - 36 * 3600000).toISOString() },
     ];
 
     // ── ~6 MONTHS OF OPERATING HISTORY (generated, deterministic) ──────────
@@ -706,12 +749,20 @@
           // matching past cover_assignment (1–2 lessons).
           const lessons = 1 + ((actor.seed + k) % 2);
           const cost = isExt ? rate * lessons : 0;
+          // Tag each historical cover with the distribution MODE that filled it,
+          // varied deterministically into a realistic CASCADE-HEAVY mix
+          // (~55% cascade · ~30% open_pool · ~15% admin_assign). Drives
+          // getAnalytics().offersByMode over the FULL operating history.
+          const _modeRoll = (actor.seed * 5 + k * 3) % 20;
+          const histMode = _modeRoll < 11 ? 'cascade'
+                         : _modeRoll < 17 ? 'open_pool'
+                         : 'admin_assign';
           historyAssignments.push({
             id: `asg-h-${_hasg++}`, gapId, date: _isoDay(eventMs),
             recipientType: actor.type, recipientId: actor.id,
             subId: isExt ? actor.id : null,
             subName: isExt ? actor.rec.name : actor.rec.displayName,
-            subject, costSek: cost,
+            subject, costSek: cost, mode: histMode,
             externalComparableSek: isExt ? cost : 300 * lessons,
             isExternal: isExt, isConfirmed: true,
             assignedAt: new Date(eventMs).toISOString(),
@@ -737,15 +788,27 @@
     assignments.unshift(...historyAssignments);
 
     // ── DEMO-WEEK EVENTS matching the seeded live offers above ─────────────
+    // One offer_sent per gap that has an offer; fill/decline/expire events for
+    // the resolved gaps. These feed avgMinutesToFill and the CURRENT-board
+    // slice of analytics; the lifetime figures come from the 6-month history.
     auditLog.push(
-      { id: _logId(), ts: baseSent, type: 'offer_sent',       gapId: 'gap-1', recipientType: null, recipientId: null, subId: null,    detail: 'Cascade started · Matematik 8B' },
-      { id: _logId(), ts: baseSent, type: 'target_contacted', gapId: 'gap-1', recipientType: 'staff', recipientId: 'staff-1', subId: null, detail: 'Contacted rank 1' },
-      { id: _logId(), ts: baseSent, type: 'offer_sent',       gapId: 'gap-3', recipientType: null, recipientId: null, subId: null,    detail: 'Open pool started · Biologi 9A' },
-      { id: _logId(), ts: new Date(BASE_NOW - 86400000).toISOString(),            type: 'admin_assigned', gapId: 'gap-4',  recipientType: 'external_sub', recipientId: 'sub-9',  subId: 'sub-9', detail: 'Admin assigned Lars Ek · Idrott 9C' },
-      { id: _logId(), ts: new Date(BASE_NOW - 2 * 86400000 + 600000).toISOString(),  type: 'offer_declined', gapId: 'gap-5',  recipientType: 'external_sub', recipientId: 'sub-4',  subId: 'sub-4', detail: 'Declined Engelska 8A' },
-      { id: _logId(), ts: new Date(BASE_NOW - 2 * 86400000 + 1600000).toISOString(), type: 'target_expired', gapId: 'gap-5',  recipientType: 'external_sub', recipientId: 'sub-5',  subId: 'sub-5', detail: 'Step timeout' },
-      { id: _logId(), ts: new Date(BASE_NOW - 2 * 86400000 + 1700000).toISOString(), type: 'offer_expired',  gapId: 'gap-5',  recipientType: null, recipientId: null, subId: null,    detail: 'Cascade exhausted · Engelska 8A' },
-      // live extra offers (offer_sent + a contact event each) so analytics see them
+      // gap-2 OPEN POOL Engelska — pool contacted.
+      { id: _logId(), ts: baseSent, type: 'offer_sent',       gapId: 'gap-2', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Engelska 7A' },
+      // gap-3 CASCADE Matematik — Karin (staff-1) contacted rank 1 (internal-first).
+      { id: _logId(), ts: live,     type: 'offer_sent',       gapId: 'gap-3', recipientType: null, recipientId: null, subId: null, detail: 'Cascade started · Matematik 9B' },
+      { id: _logId(), ts: live,     type: 'target_contacted', gapId: 'gap-3', recipientType: 'staff', recipientId: 'staff-1', subId: null, detail: 'Contacted rank 1' },
+      // gap-4 FILLED today via admin_assign (external).
+      { id: _logId(), ts: new Date(BASE_NOW - 150 * 60000).toISOString(), type: 'offer_sent',     gapId: 'gap-4', recipientType: null, recipientId: null, subId: null, detail: 'Admin assign · Idrott 9C' },
+      { id: _logId(), ts: new Date(BASE_NOW - 2 * 3600000).toISOString(),  type: 'admin_assigned', gapId: 'gap-4', recipientType: 'external_sub', recipientId: 'sub-9', subId: 'sub-9', detail: 'Admin assigned Lars Ek · Idrott 9C' },
+      // gap-5 EXPIRED today — cascade exhausted.
+      { id: _logId(), ts: new Date(BASE_NOW - 3 * 3600000 + 600000).toISOString(),  type: 'offer_declined', gapId: 'gap-5', recipientType: 'external_sub', recipientId: 'sub-4', subId: 'sub-4', detail: 'Declined Svenska 8A' },
+      { id: _logId(), ts: new Date(BASE_NOW - 90 * 60000).toISOString(),            type: 'target_expired', gapId: 'gap-5', recipientType: 'external_sub', recipientId: 'sub-5', subId: 'sub-5', detail: 'Step timeout' },
+      { id: _logId(), ts: new Date(BASE_NOW - 85 * 60000).toISOString(),            type: 'offer_expired',  gapId: 'gap-5', recipientType: null, recipientId: null, subId: null, detail: 'Cascade exhausted · Svenska 8A' },
+      // gap-6 INTERNAL-FIRST Fysik — open_pool to staff + qualified extern.
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-6', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started (internal first) · Fysik 9A' },
+      // gap-7 DUTY Rastvakt — open_pool.
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-7', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Rastvakt' },
+      // rest-of-week live offers (offer_sent each) so analytics see them.
       { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-8',  recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Matematik 9B' },
       { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-9',  recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Engelska 8C' },
       { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-10', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Idrott 7C' },
@@ -2614,10 +2677,31 @@
     },
 
     getAnalytics() {
-      const gaps = this.listGaps();
-      const totalNeeded = gaps.filter(g => g.status !== 'open_unsent').length || gaps.length;
-      const filled = gaps.filter(g => g.status === 'filled').length;
-      const fillRate = gaps.length ? Math.round((filled / gaps.length) * 100) : 0;
+      // ── LIFETIME FILL RATE (whole ~6-month operating record, not the
+      // current board) ─────────────────────────────────────────────────
+      // A gap "needed cover" once an offer_sent was logged for it; it was
+      // "filled" if that gap also saw an offer_accepted or admin_assigned.
+      // Counting over DISTINCT gapIds in the audit log gives a believable
+      // lifetime percentage (history is cascade-heavy: most gaps fill even
+      // when the first candidate declines), rather than the tiny current-
+      // board ratio. Falls back to the board if the log is somehow empty.
+      const sentGaps = new Set();
+      const filledGaps = new Set();
+      for (const e of _store.auditLog) {
+        if (!e.gapId) continue;
+        if (e.type === 'offer_sent') sentGaps.add(e.gapId);
+        else if (e.type === 'offer_accepted' || e.type === 'admin_assigned') {
+          filledGaps.add(e.gapId);
+          sentGaps.add(e.gapId); // a fill implies the gap needed cover
+        }
+      }
+      const fillRate = sentGaps.size
+        ? Math.round((filledGaps.size / sentGaps.size) * 100)
+        : (() => {
+            const gaps = this.listGaps();
+            const filled = gaps.filter(g => g.status === 'filled').length;
+            return gaps.length ? Math.round((filled / gaps.length) * 100) : 0;
+          })();
 
       // avg minutes to fill: from first offer_sent to offer_accepted/admin_assigned per gap
       const sentMap = {}, fillMap = {};
@@ -2638,8 +2722,24 @@
 
       const totalCostSek = _store.assignments.reduce((sum, a) => sum + (a.costSek || 0), 0);
 
+      // ── OFFERS BY MODE over the FULL operating history ────────────────
+      // Count every COVER's distribution mode: each historical/live
+      // cover_assignment carries a `mode` tag, plus any current offers that
+      // have not yet produced an assignment (so live open offers still show
+      // up). Assignments dominate (tens each); current-only offers (no
+      // assignment yet, e.g. live cascades/pools) are added on top.
       const offersByMode = { admin_assign: 0, open_pool: 0, cascade: 0 };
-      _store.offers.forEach(o => { if (offersByMode[o.mode] != null) offersByMode[o.mode]++; });
+      const assignedGapIds = new Set();
+      for (const a of _store.assignments) {
+        if (a.gapId) assignedGapIds.add(a.gapId);
+        const m = offersByMode[a.mode] != null ? a.mode : 'cascade';
+        offersByMode[m]++;
+      }
+      // add current offers whose gap has NOT yet produced an assignment.
+      _store.offers.forEach(o => {
+        if (assignedGapIds.has(o.gapId)) return;
+        if (offersByMode[o.mode] != null) offersByMode[o.mode]++;
+      });
 
       let sent = 0, declined = 0;
       for (const e of _store.auditLog) {

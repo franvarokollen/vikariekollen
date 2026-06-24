@@ -224,6 +224,9 @@
     function render() {
       container.innerHTML = '';
       const allSubs = Adapter.listSubs();
+      // Auto-select the top substitute on first load so the detail pane is
+      // populated rather than showing the empty "pick a substitute" state.
+      if (selectedSubId === null && allSubs.length) selectedSubId = allSubs[0].id;
       const subs = poolFilter === 'all'
         ? allSubs
         : allSubs.filter(s => s.tier === poolFilter);

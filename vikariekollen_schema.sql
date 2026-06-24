@@ -176,6 +176,17 @@ create index if not exists idx_cover_offers_school   on public.cover_offers(scho
 create index if not exists idx_cover_offers_status   on public.cover_offers(school_id, status);
 create index if not exists idx_cover_offers_date     on public.cover_offers(school_id, date);
 
+-- ANALYTICS NOTE — offers-by-mode + lifetime fill rate are LIFETIME figures:
+--   * offers_by_mode is counted over EVERY cover (each cover_assignment carries
+--     the distribution mode that filled it — in a live backend, join
+--     cover_assignments → fill_assignment_id's cover_offers.mode, or denormalise
+--     a `mode` column onto cover_assignments) PLUS any still-open cover_offers
+--     whose gap has not yet produced an assignment. The prototype Adapter tags
+--     each seeded/historical assignment with `mode` directly (cascade-heavy mix).
+--   * fill_rate is computed over the AUDIT LOG (offer_sent vs offer_accepted/
+--     admin_assigned per distinct gap), not the current board, so it reflects
+--     the whole ~6-month operating record rather than today's open gaps.
+
 -- ----------------------------------------------------------------------------
 -- 2. cover_offer_targets — fan-out, one row per CANDIDATE contacted for an
 --    offer. POLYMORPHIC RECIPIENT: a candidate is either an EXTERNAL SUB or an
