@@ -213,8 +213,21 @@
   function buildFooter(role) {
     const build = window.VK_BUILD || { version: 'dev', build: 0, date: '' };
     const buildLabel = 'v' + build.version + ' · build ' + build.build;
+    // DEMO-ONLY view switcher: when running standalone (not embedded in the
+    // FVK shell), offer a link to the "inside Frånvarokollen" demo view.
+    // Never shown in production — purely to preview both presentations.
+    const embedded = window.self !== window.top;
+    const lang = VK.lang.get();
+    const switchLabel = lang === 'en' ? '▸ View in Frånvarokollen (demo)'
+                                      : '▸ Visa i Frånvarokollen (demo)';
+    const switchTitle = lang === 'en' ? 'Demo only — preview VK embedded in Frånvarokollen'
+                                      : 'Endast demo — förhandsvisa VK inbäddad i Frånvarokollen';
     return el('div', { className: 'app-footer' },
       el('span', { className: 'footer-copy' }, t('footerCopy')),
+      embedded ? null : el('a', {
+        href: 'fvk-shell.html', title: switchTitle,
+        style: 'font-size:11px;margin-left:12px;color:var(--blue,#0F71F6);text-decoration:none;align-self:center;',
+      }, switchLabel),
       el('span', {
         title: build.date,
         style: 'font-size:11px;color:var(--muted,#9ca3af);margin-left:auto;align-self:center;',
