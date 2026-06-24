@@ -862,32 +862,42 @@ html, body {
 
 /* -- App nav tabs ------------------------------------------ */
 .app-nav {
-  background: var(--card-bg);
+  background: var(--page-bg);
   border-bottom: 1px solid var(--card-border);
-  padding: 0 20px;
+  padding: 10px 20px 0;
   display: flex;
-  gap: 2px;
+  align-items: flex-end;
+  gap: 4px;
   flex-shrink: 0;
   overflow-x: auto;
 }
 
 .nav-tab {
-  padding: 12px 16px 10px;
+  padding: 9px 18px 10px;
   font-size: 13px;
   font-weight: 600;
   color: var(--muted);
   background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 9px 9px 0 0;
+  margin-bottom: -1px;          /* sit the tab on the nav's bottom rule */
   cursor: pointer;
   white-space: nowrap;
   font-family: inherit;
-  transition: color .12s, border-color .12s;
+  transition: background .12s, color .12s, box-shadow .12s;
 }
-.nav-tab:hover { color: var(--text); }
+.nav-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, .55);
+}
 .nav-tab.active {
-  color: var(--blue);
-  border-bottom-color: var(--blue);
+  color: var(--navy);
+  background: var(--card-bg);
+  border-color: var(--card-border);
+  border-top: 2px solid var(--blue);   /* tab-top accent */
+  padding-top: 8px;                     /* keep height after the 2px top */
+  box-shadow: 0 -2px 6px rgba(13, 35, 64, .06);
 }
 
 /* -- Main content region ----------------------------------- */
@@ -976,7 +986,7 @@ html, body {
   .demo-banner { padding: 5px 14px; }
   .board-page  { padding: 12px 10px 28px; gap: 14px; }
   .app-content { padding: 14px 12px 28px; }
-  .app-nav     { padding: 0 10px; }
+  .app-nav     { padding: 8px 10px 0; }
   .stats-row   { grid-template-columns: repeat(2, 1fr); }
   .user-email  { display: none; }
   .mode-control { flex-wrap: wrap; }
