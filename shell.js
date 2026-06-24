@@ -43,7 +43,14 @@
       demoBanner: 'Demo — inga riktiga vikarier kontaktas. Allt simuleras.',
 
       // -- Nav tabs (coordinator) --
-      tabBoard: 'Tavla', tabPool: 'Vikarier', tabSettings: 'Inställningar', tabHistory: 'Historik',
+      tabBoard: 'Tavla', tabSchedule: 'Schema', tabPool: 'Vikarier', tabSettings: 'Inställningar', tabHistory: 'Historik',
+
+      // -- Schedule (grid) view --
+      schByTeacher: 'Per lärare', schWholeDay: 'Hela dagen', schByClass: 'Per klass',
+      schAllLessons: 'Alla lektioner', schNeedsCover: 'Behöver vikarie', schInProgress: 'Pågår',
+      schNoGaps: 'Inga luckor denna dag', schWas: 'Frånvarande', schSubject: 'Ämne',
+      schAssignDemo: 'Tilldela vikarie (demo)…', schAssignedDemo: 'Tilldelad (demo):',
+      schOnBoard: 'Visa i Tavlan', schDemoTag: 'Schema-vy (demo)',
       // -- Nav tabs (sub) --
       tabSubOffers: 'Mina erbjudanden', tabSubBookings: 'Mina pass',
       tabSubAvailability: 'Min tillgänglighet',
@@ -94,7 +101,13 @@
 
       demoBanner: 'Demo — no real substitutes are contacted. Everything is simulated.',
 
-      tabBoard: 'Board', tabPool: 'Substitutes', tabSettings: 'Settings', tabHistory: 'History',
+      tabBoard: 'Board', tabSchedule: 'Schedule', tabPool: 'Substitutes', tabSettings: 'Settings', tabHistory: 'History',
+
+      schByTeacher: 'Per teacher', schWholeDay: 'Whole day', schByClass: 'Per class',
+      schAllLessons: 'All lessons', schNeedsCover: 'Needs cover', schInProgress: 'In progress',
+      schNoGaps: 'No gaps this day', schWas: 'Absent', schSubject: 'Subject',
+      schAssignDemo: 'Assign cover (demo)…', schAssignedDemo: 'Assigned (demo):',
+      schOnBoard: 'Show on board', schDemoTag: 'Schedule view (demo)',
       tabSubOffers: 'My offers', tabSubBookings: 'My bookings',
       tabSubAvailability: 'My availability',
       tabStaffRequests: 'Requests', tabStaffCovers: 'My covers', tabStaffWorkload: 'My workload',

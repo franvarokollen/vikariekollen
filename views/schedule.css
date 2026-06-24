@@ -1,0 +1,132 @@
+/* ============================================================
+   views/schedule.css — "Schema" (grid) view.
+   Day-at-a-glance timetable of gaps. Brand tokens from styles.css
+   (--navy --blue --red --green --muted --card-bg --page-bg).
+   ============================================================ */
+
+.sch-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.sch-date { display: flex; align-items: center; gap: 8px; }
+.sch-date-label { font-weight: 600; color: var(--navy); min-width: 120px; text-align: center; }
+
+.sch-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.sch-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.sch-legend-sw { width: 12px; height: 12px; border-radius: 3px; border: 1px solid transparent; }
+
+/* Board: gutter + columns, horizontally scrollable for the wide layouts. */
+.sch-scroll {
+  overflow-x: auto;
+  background: var(--card-bg, #fff);
+  border: 1px solid #e6e2db;
+  border-radius: 12px;
+  padding: 10px;
+}
+.sch-board { position: relative; display: flex; min-width: max-content; }
+
+.sch-gutter { width: 46px; flex: none; }
+.sch-col { flex: none; }
+
+.sch-colhead {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy);
+  border-bottom: 1px solid #e6e2db;
+  padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sch-col .sch-colhead { border-left: 1px solid #ece8e1; }
+
+.sch-gutter-body { position: relative; }
+.sch-hour {
+  position: absolute;
+  right: 6px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.sch-colbody {
+  position: relative;
+  border-left: 1px solid #ece8e1;
+  /* 63px = 60 min * 1.05 px/min (kept in sync with PX_PER_MIN in schedule.js) */
+  background-image: repeating-linear-gradient(
+    to bottom, transparent, transparent 62px, #f0ece4 62px, #f0ece4 63px);
+}
+
+.sch-block {
+  position: absolute;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  padding: 3px 6px;
+  overflow: hidden;
+  cursor: pointer;
+  line-height: 1.2;
+  box-sizing: border-box;
+  transition: filter .12s ease, box-shadow .12s ease;
+}
+.sch-block:hover { filter: brightness(0.97); box-shadow: 0 0 0 2px rgba(15,113,246,0.25); }
+.sch-block-t { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sch-block-s { font-size: 10px; opacity: 0.85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Status palettes */
+.sch-block.is-unsent  { background: #fdf0d9; border-color: #f0c267; color: #8a5a05; }
+.sch-block.is-pool,
+.sch-block.is-cascade { background: #e6f0ff; border-color: #8bb6f0; color: #0b3e8f; }
+.sch-block.is-filled  { background: #e6f6ec; border-color: #7fce9d; color: #0f6b34; }
+.sch-block.is-expired { background: #f1f0ed; border-color: #cfd3da; color: #5a6577; }
+
+/* Legend swatches reuse the same palette */
+.sch-legend-sw.is-unsent  { background: #fdf0d9; border-color: #f0c267; }
+.sch-legend-sw.is-pool    { background: #e6f0ff; border-color: #8bb6f0; }
+.sch-legend-sw.is-filled  { background: #e6f6ec; border-color: #7fce9d; }
+.sch-legend-sw.is-expired { background: #f1f0ed; border-color: #cfd3da; }
+
+/* "now" marker spanning the columns (gutter is 46px wide) */
+.sch-now {
+  position: absolute;
+  left: 46px;
+  right: 0;
+  border-top: 2px dashed var(--red);
+  pointer-events: none;
+}
+.sch-now-label {
+  position: absolute;
+  left: 0;
+  top: -8px;
+  font-size: 9px;
+  color: var(--red);
+  background: var(--card-bg, #fff);
+  padding: 0 4px;
+}
+
+/* Modal internals */
+.sch-modal-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.sch-modal-time { font-size: 13px; color: var(--muted); }
+.sch-modal-line { display: flex; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.sch-modal-k { color: var(--muted); min-width: 80px; }
+.sch-filled-note {
+  margin-top: 10px; padding: 8px 10px; border-radius: 8px;
+  background: #e6f6ec; color: #0f6b34; font-size: 13px; font-weight: 500;
+}
+.sch-assign-select {
+  margin-top: 12px; width: 100%; height: 36px; padding: 0 10px;
+  border: 1px solid #d7d2c9; border-radius: 8px; background: #fff; font-size: 13px; cursor: pointer;
+}

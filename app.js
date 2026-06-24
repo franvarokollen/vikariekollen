@@ -30,6 +30,7 @@
   const TABS = {
     coordinator: [
       { id: 'board',    labelKey: 'tabBoard',    view: 'board' },
+      { id: 'schedule', labelKey: 'tabSchedule', view: 'schedule' },
       { id: 'pool',     labelKey: 'tabPool',     view: 'pool' },
       { id: 'settings', labelKey: 'tabSettings', view: 'settings' },
       { id: 'history',  labelKey: 'tabHistory',  view: 'history' },
