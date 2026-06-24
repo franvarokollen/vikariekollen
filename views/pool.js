@@ -53,7 +53,8 @@
       fieldName:       'Namn *',
       fieldEmail:      'E-post *',
       fieldPhone:      'Telefon',
-      fieldSubjects:   'Ämnen (kommaseparerade)',
+      fieldSubjects:   'Ämnen',
+      subjectsHint:    'Hantera ämnen i Inställningar.',
       fieldRate:       'Timarvode (kr)',
       fieldNotes:      'Anteckningar',
       saveBtn:         'Spara',
@@ -124,7 +125,8 @@
       fieldName:       'Name *',
       fieldEmail:      'Email *',
       fieldPhone:      'Phone',
-      fieldSubjects:   'Subjects (comma-separated)',
+      fieldSubjects:   'Subjects',
+      subjectsHint:    'Manage subjects in Settings.',
       fieldRate:       'Hourly rate (kr)',
       fieldNotes:      'Notes',
       saveBtn:         'Save',
@@ -813,12 +815,53 @@
     function openSubModal(existingSub) {
       const isEdit = !!existingSub;
 
-      const nameInp     = el('input', { type: 'text',   className: 'text-input', placeholder: 'Anna Svensson', value: isEdit ? existingSub.name : '' });
-      const emailInp    = el('input', { type: 'email',  className: 'text-input', placeholder: 'anna@skola.se',  value: isEdit ? (existingSub.email || '') : '' });
-      const phoneInp    = el('input', { type: 'tel',    className: 'text-input', placeholder: '070-000 00 00',  value: isEdit ? (existingSub.phone || '') : '' });
-      const subjectsInp = el('input', { type: 'text',   className: 'text-input', placeholder: 'Matematik, Fysik', value: isEdit ? (existingSub.subjects || []).join(', ') : '' });
-      const rateInp     = el('input', { type: 'number', className: 'text-input', placeholder: '250', min: '0', value: isEdit ? String(Math.round(Number(existingSub.hourlyRate) || 0)) : '' });
-      const notesInp    = el('textarea', { className: 'text-input pool-notes-input', rows: '3', placeholder: '…', value: isEdit ? (existingSub.notes || '') : '' });
+      const nameInp  = el('input', { type: 'text',   className: 'text-input', placeholder: 'Anna Svensson', value: isEdit ? existingSub.name : '' });
+      const emailInp = el('input', { type: 'email',  className: 'text-input', placeholder: 'anna@skola.se',  value: isEdit ? (existingSub.email || '') : '' });
+      const phoneInp = el('input', { type: 'tel',    className: 'text-input', placeholder: '070-000 00 00',  value: isEdit ? (existingSub.phone || '') : '' });
+      const rateInp  = el('input', { type: 'number', className: 'text-input', placeholder: '250', min: '0', value: isEdit ? String(Math.round(Number(existingSub.hourlyRate) || 0)) : '' });
+      const notesInp = el('textarea', { className: 'text-input pool-notes-input', rows: '3', placeholder: '…', value: isEdit ? (existingSub.notes || '') : '' });
+
+      // -- Subject chip picker --
+      // Build the option list: all teaching subjects from the store, plus any
+      // legacy values on the sub that are not in the list (preserve, show selected).
+      const teachingSubjects = (Adapter.listSubjects() || [])
+        .filter(function (s) { return s.type === 'teaching'; })
+        .map(function (s) { return s.name; });
+
+      const currentSubjects = isEdit ? (existingSub.subjects || []) : [];
+      // Legacy values: sub already has a subject not in the managed list
+      const legacySubjects = currentSubjects.filter(function (s) {
+        return !teachingSubjects.includes(s);
+      });
+      const allOptions = teachingSubjects.concat(legacySubjects);
+
+      // Track selection in a Set
+      const selectedSubjects = new Set(currentSubjects);
+
+      const chipPickerEl = el('div', { className: 'sub-subject-picker' });
+
+      function renderChips() {
+        chipPickerEl.innerHTML = '';
+        allOptions.forEach(function (name) {
+          const isSelected = selectedSubjects.has(name);
+          const chip = el('button', {
+            type: 'button',
+            className: 'sub-subject-chip' + (isSelected ? ' selected' : ''),
+            onclick: function () {
+              if (selectedSubjects.has(name)) {
+                selectedSubjects.delete(name);
+              } else {
+                selectedSubjects.add(name);
+              }
+              renderChips();
+            },
+          }, name);
+          chipPickerEl.appendChild(chip);
+        });
+      }
+      renderChips();
+
+      const subjectsHintEl = el('span', { className: 'sub-subject-hint' }, T('subjectsHint'));
 
       const errEl = el('p', { className: 'pool-modal-err', style: 'display:none' }, '');
 
@@ -835,10 +878,10 @@
         return {
           name,
           email,
-          phone:    phoneInp.value.trim(),
-          subjects: subjectsInp.value.split(',').map(s => s.trim()).filter(Boolean),
+          phone:      phoneInp.value.trim(),
+          subjects:   Array.from(selectedSubjects),
           hourlyRate: Math.round(Number(rateInp.value) || 0),
-          notes:    notesInp.value.trim(),
+          notes:      notesInp.value.trim(),
         };
       }
 
@@ -856,7 +899,9 @@
         el('label', { className: 'field-label' }, T('fieldName')),    nameInp,
         el('label', { className: 'field-label' }, T('fieldEmail')),   emailInp,
         el('label', { className: 'field-label' }, T('fieldPhone')),   phoneInp,
-        el('label', { className: 'field-label' }, T('fieldSubjects')), subjectsInp,
+        el('label', { className: 'field-label' }, T('fieldSubjects')),
+        chipPickerEl,
+        subjectsHintEl,
         el('label', { className: 'field-label' }, T('fieldRate')),    rateInp,
         el('label', { className: 'field-label' }, T('fieldNotes')),   notesInp
       );

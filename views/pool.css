@@ -607,6 +607,51 @@ tbody tr:nth-child(odd) .slot:hover     { background: #f4efe8; }
   font-size: 13px;
 }
 
+/* SUBJECT CHIP PICKER (modal) */
+.sub-subject-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 6px 0 2px;
+}
+
+.sub-subject-chip {
+  padding: 4px 11px;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--card-bg);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background .1s, color .1s, border-color .1s;
+  line-height: 1.4;
+}
+.sub-subject-chip:hover {
+  background: #eef3ff;
+  color: var(--blue);
+  border-color: #93c5fd;
+}
+.sub-subject-chip.selected {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+.sub-subject-chip.selected:hover {
+  background: #163d6a;
+  border-color: #163d6a;
+  color: #fff;
+}
+
+.sub-subject-hint {
+  font-size: 11px;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
 /* ============================================================
    RELIABILITY DETAIL PANEL (in the detail pane)
    ============================================================ */
