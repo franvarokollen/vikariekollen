@@ -120,8 +120,8 @@
 .sub-row:last-child { border-bottom: none; }
 .sub-row:hover { background: #faf7f2; }
 .sub-row.sub-row-selected {
-  background: #f0f5ff;
-  border-left: 3px solid var(--blue);
+  background: var(--red-bg);
+  border-left: 3px solid var(--red);
   padding-left: 11px;
 }
 
@@ -225,7 +225,7 @@
   transition: width .2s;
 }
 .reliability-fill.rel-hi  { background: var(--green); }
-.reliability-fill.rel-mid { background: var(--blue); }
+.reliability-fill.rel-mid { background: var(--green); }
 .reliability-fill.rel-lo  { background: var(--amber-text); }
 
 /* ROW ACTIONS */
@@ -288,30 +288,37 @@
 /* AVAILABILITY SUB-TABS */
 .avail-tab-bar {
   display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  background: var(--page-bg);
   border-bottom: 1px solid var(--card-border);
-  padding: 0 16px;
-  gap: 0;
+  padding: 8px 16px 0;
   flex-shrink: 0;
 }
 
 .avail-tab-btn {
   background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 10px 14px 8px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  padding: 8px 14px;
   font-size: 12px;
   font-weight: 600;
   color: var(--muted);
   cursor: pointer;
   font-family: inherit;
   margin-bottom: -1px;
-  transition: color .1s, border-color .1s;
+  transition: background .12s, color .12s, box-shadow .12s;
   white-space: nowrap;
 }
-.avail-tab-btn:hover { color: var(--text); }
+.avail-tab-btn:hover { color: var(--text); background: rgba(255,255,255,.55); }
 .avail-tab-btn.active {
-  color: var(--blue);
-  border-bottom-color: var(--blue);
+  color: var(--navy);
+  background: var(--card-bg);
+  border-color: var(--card-border);
+  border-top: 2px solid var(--blue);
+  padding-top: 6px;
+  box-shadow: 0 -2px 6px rgba(13,35,64,.06);
 }
 
 /* TAB CONTENT WRAPPER */
@@ -705,7 +712,7 @@ tbody tr:nth-child(odd) .slot:hover     { background: #f4efe8; }
   transition: width .3s ease;
 }
 .pool-rel-fill.rel-hi  { background: var(--green,  #16a34a); }
-.pool-rel-fill.rel-mid { background: var(--blue,   #0F71F6); }
+.pool-rel-fill.rel-mid { background: var(--green,  #16a34a); }
 .pool-rel-fill.rel-lo  { background: var(--amber-text, #b45309); }
 
 /* Breakdown chips row */
