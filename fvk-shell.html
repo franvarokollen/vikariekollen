@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frånvarokollen · Vikariekollen (plugin-demo)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" />
+  <style>
+    :root{
+      --navy:#16223e; --navy-deep:#0d2340; --blue:#2563eb; --blue2:#60a5fa;
+      --paper:#faf8f5; --line:rgba(255,255,255,.10); --muted:#9fb0c8;
+      --font:'Geist',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;font-family:var(--font);background:var(--paper);}
+    .shell{display:flex;height:100vh;width:100%;}
+
+    /* ---- FVK navy sidebar ---- */
+    .side{width:208px;flex-shrink:0;background:var(--navy-deep);display:flex;flex-direction:column;padding:14px 10px;}
+    .brand{display:flex;align-items:center;gap:9px;padding:6px 8px 16px;}
+    .squares{display:grid;grid-template-columns:repeat(3,6px);grid-auto-rows:6px;gap:2px;flex-shrink:0;}
+    .squares span{width:6px;height:6px;border-radius:1px;}
+    .wm{line-height:1.05;}
+    .wm b{display:block;color:#fff;font-size:13px;font-weight:500;}
+    .wm b.bot{font-weight:800;}
+    .navlbl{color:var(--muted);font-size:10px;letter-spacing:.5px;text-transform:uppercase;padding:6px 10px 4px;}
+    .nav{display:flex;align-items:center;gap:9px;color:#cdd8ea;font-size:13px;padding:9px 10px;border-radius:8px;cursor:pointer;user-select:none;transition:background .12s,color .12s;}
+    .nav:hover{background:rgba(255,255,255,.06);color:#fff;}
+    .nav.active{background:var(--blue);color:#fff;font-weight:500;}
+    .nav .ico{width:16px;text-align:center;opacity:.9;font-size:14px;}
+    .side-foot{margin-top:auto;color:var(--muted);font-size:10px;padding:10px;border-top:1px solid var(--line);line-height:1.5;}
+    .pluglabel{display:inline-flex;align-items:center;gap:5px;color:#9fe1cb;font-weight:500;}
+    .dot{width:6px;height:6px;border-radius:50%;background:#5dcaa5;display:inline-block;}
+
+    /* ---- main + plugin frame ---- */
+    .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+    .crumb{height:40px;flex-shrink:0;background:#fff;border-bottom:1px solid #e2ddd6;display:flex;align-items:center;justify-content:space-between;padding:0 16px;}
+    .crumb .path{font-size:12px;color:#5a6577;}
+    .crumb .path b{color:#1B4776;font-weight:500;}
+    .crumb .tag{font-size:11px;color:#5a6577;background:#f0ece7;border-radius:6px;padding:3px 9px;}
+    .frame-wrap{flex:1;min-height:0;position:relative;}
+    iframe{width:100%;height:100%;border:0;display:block;background:var(--paper);}
+
+    /* inert-nav toast */
+    .toast{position:fixed;left:218px;bottom:18px;background:var(--navy);color:#fff;font-size:12px;padding:9px 13px;border-radius:8px;opacity:0;transform:translateY(6px);transition:opacity .18s,transform .18s;pointer-events:none;max-width:300px;box-shadow:0 6px 20px rgba(13,35,64,.25);}
+    .toast.show{opacity:1;transform:translateY(0);}
+
+    @media(max-width:680px){
+      .side{width:60px;padding:10px 6px;}
+      .wm,.navlbl,.nav span:not(.ico),.side-foot{display:none;}
+      .brand{justify-content:center;padding:6px 0 14px;}
+      .nav{justify-content:center;padding:10px 0;}
+      .toast{left:70px;}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- FVK navy sidebar (host chrome) -->
+    <aside class="side">
+      <div class="brand">
+        <div class="squares">
+          <span style="background:#2563eb"></span><span style="background:#60a5fa"></span><span style="background:#fff"></span>
+          <span style="background:#60a5fa"></span><span style="background:#2563eb"></span><span style="background:#60a5fa"></span>
+          <span style="background:#fff"></span><span style="background:#60a5fa"></span><span style="background:#2563eb"></span>
+        </div>
+        <div class="wm"><b>Frånvaro</b><b class="bot">Kollen</b></div>
+      </div>
+
+      <div class="navlbl">Vikariehantering</div>
+      <div class="nav" data-inert="Daglig vikarie"><span class="ico">▦</span><span>Daglig vikarie</span></div>
+      <div class="nav" data-inert="Vikariecentral"><span class="ico">◫</span><span>Vikariecentral</span></div>
+      <div class="nav active"><span class="ico">⇄</span><span>Vikariekollen</span></div>
+      <div class="nav" data-inert="Långtidsfrånvaro"><span class="ico">◷</span><span>Långtidsfrånvaro</span></div>
+
+      <div class="navlbl">System</div>
+      <div class="nav" data-inert="Inställningar"><span class="ico">⚙</span><span>Inställningar</span></div>
+      <div class="nav" data-inert="Ladda om schema"><span class="ico">↻</span><span>Ladda om schema</span></div>
+
+      <div class="side-foot">
+        <span class="pluglabel"><span class="dot"></span>Vikariekollen — plugin</span><br>
+        Isolerad (iframe). I skarp version: samma inloggning &amp; data som FVK.
+      </div>
+    </aside>
+
+    <!-- FVK content area = the live VK plugin -->
+    <main class="main">
+      <div class="crumb">
+        <span class="path">Frånvarokollen <span style="opacity:.5">▸</span> <b>Vikariekollen</b></span>
+        <span class="tag">Plugin-demo · iframe-inbäddad</span>
+      </div>
+      <div class="frame-wrap">
+        <iframe src="index.html" title="Vikariekollen (inbäddad)"></iframe>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var t = document.getElementById('toast'), timer;
+    document.querySelectorAll('.nav[data-inert]').forEach(function(n){
+      n.addEventListener('click', function(){
+        t.textContent = '“' + n.getAttribute('data-inert') + '” är en FVK-vy — ingår inte i den här plugin-demon.';
+        t.classList.add('show');
+        clearTimeout(timer);
+        timer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+      });
+    });
+  </script>
+</body>
+</html>
