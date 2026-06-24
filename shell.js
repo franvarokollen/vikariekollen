@@ -297,9 +297,9 @@
   }
 
   function buildLogo(size) {
-    return el('div', { className: 'fvk-logo' },
+    return el('div', { className: 'fvk-logo notranslate', translate: 'no' },
       buildLogoSquares(size),
-      el('div', { className: 'fvk-wordmark' },
+      el('div', { className: 'fvk-wordmark notranslate', translate: 'no' },
         el('span', { className: 'fvk-wordmark-top' }, t('brandTop')),
         el('span', { className: 'fvk-wordmark-bot' }, t('brandBot'))
       )

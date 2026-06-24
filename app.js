@@ -69,7 +69,7 @@
 
     const logoWrap = el('div', { className: 'login-logo-wrap' },
       components.buildLogoSquares('lg'),
-      el('div', { className: 'fvk-wordmark', style: 'align-items:center;' },
+      el('div', { className: 'fvk-wordmark notranslate', translate: 'no', style: 'align-items:center;' },
         el('span', { className: 'fvk-wordmark-top' }, t('brandTop')),
         el('span', { className: 'fvk-wordmark-bot' }, t('brandBot'))
       )
