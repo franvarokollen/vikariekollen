@@ -73,9 +73,14 @@
       autoAuto:              'Automatisk',
       autoAutoDesc:          'Systemet skickar och eskalerar förfrågningar automatiskt enligt reglerna.',
       autoAutoWarn:          'Pass kan bokas utan att en koordinator godkänner varje steg.',
+      // Wait-time visibility
+      sectionWaitTime:       'Väntetid för vikarien',
+      waitTimeLabel:         'Visa väntetid för vikarien',
+      waitTimeNote:          'Om på: vikarien ser i efterhand hur länge ett erbjudande låg hos dem innan det gick vidare. Kan uppmuntra snabbare svar, men kan av vissa upplevas som press.',
+      waitTimeSaved:         'Väntetidsinställning sparad',
       // Channels / templates
       sectionChannels: 'Kanaler',
-      channelNote:     'Väljer hur erbjudanden levereras (46elks SMS / Resend e-post) när integrationen är klar.',
+      channelNote:     'Väljer hur erbjudanden levereras (GatewayAPI SMS / Resend e-post) när integrationen är klar.',
       labelSms:        'SMS',
       labelEmail:      'E-post',
       sectionTemplates:'Mallar',
@@ -148,9 +153,14 @@
       autoAuto:              'Automatic',
       autoAutoDesc:          'The system sends and escalates requests automatically according to the rules.',
       autoAutoWarn:          'Covers can be booked without a coordinator approving each step.',
+      // Wait-time visibility
+      sectionWaitTime:       'Substitute wait time',
+      waitTimeLabel:         'Show substitutes their wait time',
+      waitTimeNote:          'When on: the substitute can see, after the fact, how long an offer was with them before it moved on. May encourage faster responses, but some may experience it as pressure.',
+      waitTimeSaved:         'Wait-time setting saved',
       // Channels / templates
       sectionChannels: 'Channels',
-      channelNote:     'Sets how offers are delivered (46elks SMS / Resend email) once integration is wired.',
+      channelNote:     'Sets how offers are delivered (GatewayAPI SMS / Resend email) once integration is wired.',
       labelSms:        'SMS',
       labelEmail:      'Email',
       sectionTemplates:'Templates',
@@ -196,6 +206,7 @@
       emailTemplate:     s.emailTemplate   || '',
       coverSourceTiers:  _cloneTiers(s.coverSourceTiers),
       automationLevel:   s.automationLevel || 'assisted',
+      showSubWaitTime:   !!(s.showSubWaitTime),
     };
 
     // ── Info note ────────────────────────────────────────────
@@ -677,6 +688,35 @@
       autoList
     );
 
+    // ── Section: Wait-time visibility ────────────────────────
+    // Saved immediately on toggle (no pending draft — binary flag).
+    const waitTimeToggleId = 'vk-toggle-showSubWaitTime';
+    const waitTimeInput = el('input', {
+      type: 'checkbox',
+      id: waitTimeToggleId,
+      className: 'settings-toggle-input',
+    });
+    waitTimeInput.checked = draft.showSubWaitTime;
+    waitTimeInput.onchange = function () {
+      draft.showSubWaitTime = this.checked;
+      const res = Adapter.updateSchoolSettings({ showSubWaitTime: draft.showSubWaitTime });
+      if (res && res.ok) {
+        components.confirmToast(T('waitTimeSaved'), 'green');
+      }
+    };
+
+    const waitTimeSection = el('div', { className: 'settings-card' },
+      el('div', { className: 'settings-section-title' }, T('sectionWaitTime')),
+      el('label', { className: 'settings-toggle-row', for: waitTimeToggleId },
+        waitTimeInput,
+        el('span', { className: 'settings-toggle-track' },
+          el('span', { className: 'settings-toggle-thumb' })
+        ),
+        el('span', { className: 'settings-toggle-label' }, T('waitTimeLabel'))
+      ),
+      el('div', { className: 'settings-note settings-wait-time-note' }, T('waitTimeNote'))
+    );
+
     // ── Section: Channels ────────────────────────────────────
     function buildToggle(labelKey, checked, onChange) {
       const id = 'vk-toggle-' + labelKey;
@@ -743,7 +783,8 @@
           channels:        { sms: draft.channels.sms, email: draft.channels.email },
           smsTemplate:     draft.smsTemplate,
           emailTemplate:   draft.emailTemplate,
-          automationLevel: draft.automationLevel,
+          automationLevel:  draft.automationLevel,
+          showSubWaitTime:  draft.showSubWaitTime,
           // coverSourceTiers saved immediately on each tier change; omit here
         });
         if (result.ok) {
@@ -763,6 +804,7 @@
       modeSection,
       stepSection,
       automationSection,
+      waitTimeSection,
       channelsSection,
       templatesSection,
       el('div', { className: 'settings-actions' }, saveBtn)

@@ -647,6 +647,13 @@
   padding-left: 2px;
 }
 
+/* ── Wait-time note (neutral tradeoff callout) ───────────── */
+.settings-wait-time-note {
+  border-left: 3px solid var(--card-border);
+  padding-left: 10px;
+  margin-top: 2px;
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 480px) {
   .settings-card   { padding: 13px 13px; }

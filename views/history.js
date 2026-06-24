@@ -28,6 +28,17 @@
       emptyLog:         'Inga händelser',
       emptyLogSub:      'Starta demo-flödet för att generera loggposter.',
       minUnit:          'min',
+      // Cost overview
+      sectionCost:         'Kostnadsöversikt',
+      costTotal:           'Total täckningskostnad',
+      costExternal:        'Extern täckning',
+      costInternal:        'Intern täckning',
+      costPerFill:         'Kostnad per externt pass',
+      costNote:            'Översikten visar var täckningskostnaden uppstår. Fler externa pass innebär högre kostnad; intern täckning utnyttjar befintlig personal.',
+      costScenarioLine:    function (n, delta) {
+        return 'Intern täckning bär ingen extern kostnad. Skillnad mot om alla ' + n + ' pass täckts externt: ' + delta + ' kr.';
+      },
+      passUnit:            'pass',
       // Event type labels
       gap_created:      'Pass skapades',
       offer_sent:       'Erbjudande skickat',
@@ -60,6 +71,17 @@
       emptyLog:         'No events',
       emptyLogSub:      'Run through the demo flow to generate log entries.',
       minUnit:          'min',
+      // Cost overview
+      sectionCost:         'Cost overview',
+      costTotal:           'Total cover cost',
+      costExternal:        'External cover',
+      costInternal:        'Internal cover',
+      costPerFill:         'Cost per external fill',
+      costNote:            'This overview shows where cover cost arises. More external fills means higher cost; internal cover utilises existing staff.',
+      costScenarioLine:    function (n, delta) {
+        return 'Internal cover carries no external cost. Difference vs covering all ' + n + ' as external: ' + delta + ' kr.';
+      },
+      passUnit:            'fills',
       gap_created:      'Gap created',
       offer_sent:       'Offer sent',
       target_contacted: 'Sub contacted',
@@ -134,6 +156,59 @@
     );
   }
 
+  function buildCostOverview(el, fmt, components, analytics) {
+    const {
+      totalCostSek, externalCostSek, internalCostSek,
+      externalCoverCount, internalCoverCount, estimatedSavingsSek,
+    } = analytics;
+
+    // Metric cards row
+    var externalSubLabel = externalCoverCount + ' ' + T('passUnit');
+    var internalSubLabel = internalCoverCount + ' ' + T('passUnit');
+    var metricsRow = el('div', { className: 'history-cost-metrics-grid' },
+      components.metricCard(T('costTotal'),    fmt.currency(totalCostSek)),
+      components.metricCard(T('costExternal'), fmt.currency(externalCostSek), externalSubLabel),
+      components.metricCard(T('costInternal'), fmt.currency(internalCostSek), internalSubLabel)
+    );
+
+    // Cost per external fill (guard divide-by-zero)
+    var perFillRow = null;
+    if (externalCoverCount > 0) {
+      var perFill = Math.round(externalCostSek / externalCoverCount);
+      perFillRow = el('div', { className: 'history-cost-stat-row' },
+        el('span', { className: 'history-cost-stat-label' }, T('costPerFill')),
+        el('span', { className: 'history-cost-stat-value' },
+          perFill.toLocaleString() + ' kr'
+        )
+      );
+    }
+
+    // Neutral scenario comparison line
+    // Total covers = internal + external; scenario: all covered as external
+    var totalCovers = internalCoverCount + externalCoverCount;
+    var scenarioLine = null;
+    if (internalCoverCount > 0 && totalCovers > 0) {
+      var delta = Math.round(estimatedSavingsSek);
+      var scenarioText = T('costScenarioLine')(totalCovers, delta.toLocaleString());
+      scenarioLine = el('div', { className: 'history-cost-scenario' }, scenarioText);
+    }
+
+    // Neutral note
+    var noteEl = el('div', { className: 'history-cost-note' }, T('costNote'));
+
+    var inner = el('div', { className: 'history-cost-inner' },
+      metricsRow,
+      perFillRow || el('span', {}),
+      scenarioLine || el('span', {}),
+      noteEl
+    );
+
+    return el('div', { className: 'history-cost-section' },
+      el('div', { className: 'history-section-title' }, T('sectionCost')),
+      inner
+    );
+  }
+
   function buildEventRow(el, fmt, components, event) {
     const meta = TYPE_META[event.type] || { icon: '◎', variant: 'muted' };
     const label = T(event.type) || event.type;
@@ -165,6 +240,9 @@
 
     // ── Analytics section ────────────────────────────────────
     const analyticsSection = buildAnalytics(el, fmt, components, analytics);
+
+    // ── Cost overview section ────────────────────────────────
+    const costSection = buildCostOverview(el, fmt, components, analytics);
 
     // ── Log section: filter + list ───────────────────────────
     const logList = el('div', { className: 'history-log-list' });
@@ -209,6 +287,7 @@
     const wrap = el('div', { className: 'history-page' },
       el('div', { className: 'history-page-title' }, T('pageTitle')),
       analyticsSection,
+      costSection,
       logSection
     );
 

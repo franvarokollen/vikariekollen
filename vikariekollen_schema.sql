@@ -71,6 +71,12 @@ alter table public.school_settings
   add column if not exists cover_automation_level text not null default 'assisted'
     check (cover_automation_level in ('manual', 'assisted', 'auto'));
 
+-- If true, a substitute is shown how long an offer sat with them before it
+-- moved on (retrospective). Off by default — it's a judgement call (can nudge
+-- faster replies but may feel like pressure).
+alter table public.school_settings
+  add column if not exists show_sub_wait_time boolean not null default false;
+
 -- ----------------------------------------------------------------------------
 -- 0b. external_subs pool attributes — ONE sub record + attributes (NOT four
 --     tables). The four contactable pools are SLICES over these columns:

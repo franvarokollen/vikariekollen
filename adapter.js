@@ -556,6 +556,10 @@
         ],
         // automation policy — how much the system acts on its own (consumed later)
         automationLevel: 'assisted',
+        // If true, a substitute is shown how long an offer sat with them
+        // before it moved on (retrospective). Off by default — it's a
+        // judgement call (can nudge faster replies but may feel like pressure).
+        showSubWaitTime: false,
         stepMinutes: stepMin,
         channels: { sms: true, email: true },
         smsTemplate: 'Hej {namn}! Vikariepass {ämne} {datum} {tid} på {skola}. Svara JA eller NEJ: {länk}',
@@ -1255,6 +1259,8 @@
       const out = JSON.parse(JSON.stringify(_store.schoolSettings));
       out.coverSourceTiers = tiers.map(t => ({ ...t }));
       out.coverSourceMode = _deriveCoverSourceMode(tiers);
+      // default false for stores created before this field existed
+      if (typeof out.showSubWaitTime !== 'boolean') out.showSubWaitTime = false;
       return out;
     },
 
@@ -1291,6 +1297,11 @@
         // 1 min (urgent) .. 20160 min (14 days, non-urgent future cases)
         if (!Number.isFinite(n) || n < 1 || n > 20160) return { ok: false, error: 'Invalid stepMinutes (1–20160)' };
         patch.stepMinutes = Math.round(n);
+      }
+      if (patch.showSubWaitTime !== undefined) {
+        if (typeof patch.showSubWaitTime !== 'boolean') {
+          return { ok: false, error: 'showSubWaitTime must be a boolean' };
+        }
       }
       // strip the tier/mode keys from the generic merge; we set them explicitly.
       const { coverSourceTiers, coverSourceMode, ...rest } = patch;
@@ -2095,10 +2106,70 @@
     // ======================================================
     // SUB-SIDE
     // ======================================================
-    // getOffersForSub(subId) → contacted/pending offers with gap context.
-    // Thin wrapper over the polymorphic recipient query for external subs.
+    // getOffersForSub(subId) → contacted/pending offers with gap context,
+    // enriched with retrospective timing fields for the showSubWaitTime feature:
+    //   sentAt        — ISO timestamp when this sub was contacted (already present)
+    //   leftAt        — ISO timestamp (or null) when the offer left this sub:
+    //                     'declined'   → their respondedAt
+    //                     'expired'    → their stepExpiresAt (the step-expiry time)
+    //                     'superseded' → the offer's filledAt if recorded, else null
+    //                     active/queued → null (still with them or not yet reached)
+    //   movedOn       — true when state ∈ {declined, expired, superseded}
+    // NOTE: _offersForRecipient returns LIVE (contacted/pending) entries only,
+    // so movedOn is always false here. The historical entries (declined/expired/
+    // superseded) are pulled separately below so the sub can see past offers too.
     getOffersForSub(subId) {
-      return _offersForRecipient('external_sub', subId);
+      // Live offers (already filtered to active states by _offersForRecipient).
+      const live = _offersForRecipient('external_sub', subId).map(entry => ({
+        ...entry,
+        leftAt: null,
+        movedOn: false,
+      }));
+
+      // Historical offer entries — targets that are no longer live for this sub.
+      const historical = [];
+      for (const offer of _store.offers) {
+        const tgt = offer.targets.find(t => _tMatch(t, 'external_sub', subId));
+        if (!tgt) continue;
+        // skip states already covered by the live path
+        if (['contacted', 'sent', 'pending', 'queued'].includes(tgt.state)) continue;
+        const gap = _gap(offer.gapId);
+        if (!gap) continue;
+
+        // Derive leftAt per state.
+        let leftAt = null;
+        if (tgt.state === 'declined') {
+          leftAt = tgt.respondedAt || null;
+        } else if (tgt.state === 'expired') {
+          // stepExpiresAt is the moment the step window closed; use respondedAt
+          // (set by _tickCascade to simNow at expiry) as a more precise fallback.
+          leftAt = tgt.stepExpiresAt || tgt.respondedAt || null;
+        } else if (tgt.state === 'superseded') {
+          // filledAt is not a standard field on the offer in this schema;
+          // use respondedAt on this target if recorded, else null.
+          leftAt = tgt.respondedAt || null;
+        }
+
+        historical.push({
+          gapId: gap.id,
+          recipientType: 'external_sub',
+          recipientId: subId,
+          subId,
+          responseToken: tgt.responseToken,
+          state: _candidateState(tgt.state),
+          rank: tgt.rank,
+          sentAt: tgt.sentAt || null,
+          stepExpiresAt: tgt.stepExpiresAt || null,
+          gap: { ...JSON.parse(JSON.stringify(gap)), status: _deriveGapStatus(gap) },
+          leftAt,
+          movedOn: true,
+        });
+      }
+
+      historical.sort((a, b) =>
+        (a.gap.date + a.gap.startTime).localeCompare(b.gap.date + b.gap.startTime));
+
+      return [...live, ...historical];
     },
 
     // subAccept / subDecline — accept { gapId, subId } or a response token

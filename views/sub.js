@@ -37,6 +37,8 @@
       lessonPlan:     'Öppna lektionsplan',
       lessonPlanSoon: 'Lektionsplan: Lektionskollen — kommer snart',
       bookingsTitle:  'Kommande pass',
+      movedOnGroup:   'Tidigare',
+      waitTimeLine:   'Erbjudandet låg hos dig i {dur} innan det gick vidare.',
     },
     en: {
       greeting:       'Hi',
@@ -55,6 +57,8 @@
       lessonPlan:     'Open lesson plan',
       lessonPlanSoon: 'Lesson plan: Lektionskollen — coming soon',
       bookingsTitle:  'Upcoming bookings',
+      movedOnGroup:   'Past',
+      waitTimeLine:   'This offer was with you for {dur} before it moved on.',
     },
   };
 
@@ -90,6 +94,10 @@
   VK.views.subOffers = function subOffers(container, ctx) {
     const { el, fmt, components, user, Adapter, rerender } = ctx;
 
+    // Read the school toggle once — gates the retrospective wait-time line.
+    const schoolSettings = Adapter.getSchoolSettings();
+    const showWait = !!(schoolSettings && schoolSettings.showSubWaitTime);
+
     // -- Greeting header --
     const name = (user && user.name) ? user.name.split(' ')[0] : '';
     container.appendChild(
@@ -102,7 +110,11 @@
     // -- Offers list --
     const offers = Adapter.getOffersForSub(user.subId) || [];
 
-    if (!offers.length) {
+    // Partition: active (pending/contacted/queued) vs moved-on
+    const activeOffers  = offers.filter(function (o) { return !o.movedOn; });
+    const movedOnOffers = offers.filter(function (o) { return  o.movedOn; });
+
+    if (!activeOffers.length && !movedOnOffers.length) {
       container.appendChild(
         el('div', { className: 'sub-card sub-card-empty' },
           components.emptyState('✉', T('noOffers'))
@@ -111,13 +123,21 @@
       return;
     }
 
-    offers.forEach(function (offer) {
+    if (!activeOffers.length) {
+      container.appendChild(
+        el('div', { className: 'sub-card sub-card-empty' },
+          components.emptyState('✉', T('noOffers'))
+        )
+      );
+    }
+
+    // ── Active offers ──────────────────────────────────────
+    activeOffers.forEach(function (offer) {
       const gap = offer.gap || {};
       const state = offer.state || 'pending';
       const isActionable = state === 'contacted' || state === 'pending';
       const isQueued = state === 'queued';
 
-      // Per-card local state for optimistic UI (accepted/declined inline)
       const cardId = 'offer-card-' + offer.gapId + '-' + offer.subId;
 
       function renderCard(localState) {
@@ -224,6 +244,54 @@
 
       container.appendChild(renderCard(null));
     });
+
+    // ── Moved-on offers (past / retrospective) ─────────────
+    if (movedOnOffers.length) {
+      container.appendChild(
+        el('div', { className: 'sub-moved-on-heading' }, T('movedOnGroup'))
+      );
+
+      movedOnOffers.forEach(function (offer) {
+        const gap = offer.gap || {};
+
+        // Wait-time line: only when flag is on and timestamps are present
+        let waitTimeLine = null;
+        if (showWait && offer.sentAt && offer.leftAt) {
+          const durationMs = Date.parse(offer.leftAt) - Date.parse(offer.sentAt);
+          if (durationMs > 0) {
+            const durStr = VK.fmt.dur(durationMs);
+            const template = T('waitTimeLine');
+            const lineText = template.replace('{dur}', durStr);
+            waitTimeLine = el('div', { className: 'sub-offer-wait-time' }, lineText);
+          }
+        }
+
+        const card = el('div', { className: 'sub-card sub-offer-card sub-offer-card--moved-on' },
+          el('div', { className: 'sub-offer-top' },
+            components.avatar(initials(gap.teacherName || ''), {}),
+            el('div', { className: 'sub-offer-info' },
+              el('div', { className: 'sub-offer-title' },
+                (gap.subject || '—') + (gap.group ? ' · ' + gap.group : '')
+              ),
+              el('div', { className: 'sub-offer-meta' },
+                el('span', {}, gapDateStr(gap)),
+                el('span', { className: 'sub-meta-dot' }, '·'),
+                el('span', {}, gapTimeRange(gap))
+              ),
+              gap.teacherName
+                ? el('div', { className: 'sub-offer-teacher' },
+                    T('covers') + ': ' + gap.teacherName
+                  )
+                : null
+            ),
+            components.statePill(offer.state || 'moved_on')
+          ),
+          waitTimeLine
+        );
+
+        container.appendChild(card);
+      });
+    }
   };
 
   // ----------------------------------------------------------

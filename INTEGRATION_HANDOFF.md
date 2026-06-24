@@ -412,6 +412,9 @@ policies — external subs reach this table only through SECURITY DEFINER RPCs.
 
 ### RPCs (all `SECURITY DEFINER SET search_path = public`)
 
+> 4 distinct RPCs below. Note `admin_assign_cover` ships with a 2-arg back-compat
+> overload, so the SQL contains **5** `create function` statements in total.
+
 | RPC | What it does |
 |---|---|
 | `match_cover_candidates(p_offer_id)` | Returns unified candidate rows (both pools) ranked by tier config. Subject qualification is soft — `qualified=false` never excludes, only sorts lower. |
@@ -474,7 +477,7 @@ be addressed before going live.
 |---|---|---|
 | Data store | `localStorage` (`vk_store_v1`, `vk_subjects`, `vk_plugin_mode`) | Supabase tables per schema |
 | Auth | Bypass — any email/code accepted | FVK Supabase auth session |
-| SMS | Logged to audit only | 46elks via `cover-offer-tick` edge function |
+| SMS | Logged to audit only | GatewayAPI (preferred — not finalised) via `cover-offer-tick` edge function |
 | Email | Logged to audit only | Resend via `cover-offer-tick` edge function |
 | Cascade advancement | `_tickCascade()` runs in the browser on `advanceClock()` calls | `cover-offer-tick` edge function triggered by cron + webhooks |
 | `response_token` | `Math.random()`-based string | `gen_random_uuid()` (schema already does this) |
@@ -505,7 +508,7 @@ be addressed before going live.
    (open pool) on `sendOffer`; advance the cascade on decline or `step_expires_at` timeout;
    expire the whole offer on `expires_at`. Trigger on `POST /functions/v1/cover-offer-tick`
    with `{ offerId, action: 'send'|'advance'|'expire' }`.
-7. **Wire SMS via 46elks** and **email via Resend** inside the edge function.
+7. **Wire SMS via GatewayAPI** (preferred provider — not yet finalised; credit setup pending, may change) and **email via Resend** inside the edge function. The provider is isolated to the edge function, so swapping it later is low-risk.
 8. **Surface write-back into FVK** — `accept_cover_offer` already inserts into
    `cover_assignments` and updates `absence_periods.covering_sub_id`; verify these columns
    exist in the FVK baseline and that the RPC's INSERT matches FVK's `cover_assignments`

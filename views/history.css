@@ -91,6 +91,80 @@
   text-align: right;
 }
 
+/* ── Cost overview section ────────────────────────────────── */
+.history-cost-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-cost-inner {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 3-up metric grid for cost cards */
+.history-cost-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* Cost per fill stat row */
+.history-cost-stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.history-cost-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.history-cost-stat-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Neutral scenario comparison */
+.history-cost-scenario {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+  padding: 8px 12px;
+  background: #f5f2ed;
+  border-radius: 6px;
+  border-left: 3px solid var(--navy);
+}
+
+/* Neutral explanatory note */
+.history-cost-note {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Responsive: stack to 2-up then 1-up on narrow */
+@media (max-width: 620px) {
+  .history-cost-metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 420px) {
+  .history-cost-metrics-grid { grid-template-columns: 1fr; gap: 8px; }
+  .history-cost-inner        { padding: 12px 14px; }
+}
+
 /* ── Log section ──────────────────────────────────────────── */
 .history-log-section {
   background: var(--card-bg);

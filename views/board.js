@@ -93,7 +93,7 @@
       newGapErrTime:       'Sluttid måste vara efter starttid.',
       // modal – send offer
       sendModalTitle:      'Skicka erbjudande',
-      sendModalBody:       'I produktion skickas erbjudanden via <strong>46elks SMS</strong> och <strong>Resend e-post</strong> med en unik svars-länk. SMS/e-post-kanalen är inte kopplad i denna demo.',
+      sendModalBody:       'I produktion skickas erbjudanden via <strong>GatewayAPI SMS</strong> och <strong>Resend e-post</strong> med en unik svars-länk. SMS/e-post-kanalen är inte kopplad i denna demo.',
       sendModalTag:        'Kräver SMS/e-post',
       sendModalConfirm:    'Simulera utskick',
     },
@@ -154,7 +154,7 @@
       newGapErrDate:       'Enter a valid date (YYYY-MM-DD).',
       newGapErrTime:       'End time must be after start time.',
       sendModalTitle:      'Send offer',
-      sendModalBody:       'In production, offers are sent via <strong>46elks SMS</strong> and <strong>Resend email</strong> with a unique response link. The SMS/email channel is not connected in this demo.',
+      sendModalBody:       'In production, offers are sent via <strong>GatewayAPI SMS</strong> and <strong>Resend email</strong> with a unique response link. The SMS/email channel is not connected in this demo.',
       sendModalTag:        'Requires SMS/email',
       sendModalConfirm:    'Simulate send',
     },
