@@ -10,37 +10,41 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --navy:         #16223e;
-  --navy-2:       #26365c;
-  --blue:         #2563eb;
-  --blue-hover:   #1d4ed8;
-  --violet:       #7c3aed;
-  --violet-hover: #6d28d9;
-  --page-bg:      #f6f8fc;
+  /* Frånvarokollen brand — Navy #1B4776 · Blue #0F71F6 · Red #E71E3C,
+     warm "paper" backgrounds with navy authority. Geist typeface. */
+  --navy:         #1B4776;  /* primary brand */
+  --navy-2:       #112d4e;  /* deeper navy (headings/sidebar) */
+  --blue:         #0F71F6;  /* CTA / active / focus */
+  --blue-hover:   #0d63db;
+  --violet:       #1B4776;  /* legacy alias → navy (violet retired from brand) */
+  --violet-hover: #112d4e;
+  --page-bg:      #faf8f5;  /* warm paper */
+  --paper-200:    #f0ece7;  /* secondary surface / hover */
   --card-bg:      #ffffff;
-  --card-border:  #e6eaf0;
+  --card-border:  #e2ddd6;  /* warm paper border */
   --radius:       10px;
   --text:         #1f2937;
-  --muted:        #6b7280;
+  --muted:        #5a6577;
   --amber-bg:     #fdf6e2;
   --amber-text:   #8a6d3b;
   --amber-border: #f0e3b8;
-  --red:          #dc2626;
-  --red-bg:       #fde8e8;
+  --red:          #E71E3C;  /* brand red — destructive/alerts */
+  --red-bg:       #fdecee;
   --green:        #16a34a;
   --green-bg:     #dcfce7;
   --green-border: #bbf7d0;
   --green-text:   #15803d;
   --avail-bg:     #dbe7ff;
-  --avail-border: #2563eb;
-  --avail-dot:    #2563eb;
-  --card-shadow:  0 1px 2px rgba(16,24,40,.05);
-  --border:       #e6eaf0;
+  --avail-border: #0F71F6;
+  --avail-dot:    #0F71F6;
+  --card-shadow:  0 1px 3px 0 rgba(13,35,64,.05), 0 1px 2px -1px rgba(13,35,64,.04);
+  --border:       #e2ddd6;
+  --font-sans:    'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 html, body {
   height: 100%;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   background: var(--page-bg);
   color: var(--text);
@@ -66,16 +70,20 @@ html, body {
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
-  transition: background .12s, border-color .12s, color .12s;
+  transition: background .12s, border-color .12s, color .12s, transform .08s, box-shadow .12s;
   font-family: inherit;
 }
+/* Tactile feedback — lift on hover, press on click (FVK house style) */
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(1px); }
 
 .btn-primary {
   background: var(--blue);
   color: #fff;
   border-color: var(--blue);
+  box-shadow: 0 1px 2px rgba(15,113,246,.25);
 }
-.btn-primary:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
+.btn-primary:hover { background: var(--blue-hover); border-color: var(--blue-hover); box-shadow: 0 3px 8px rgba(15,113,246,.28); }
 
 .btn-violet {
   background: var(--violet);
@@ -843,14 +851,136 @@ html, body {
   color: var(--muted);
 }
 
+/* ============================================================
+   SHELL ADDITIONS — nav, role switch, content, shared
+   components (vk-badge, empty-state, toast).
+   Per-view styles live in views/*.css.
+   ============================================================ */
+
+/* -- Role switch (header) ---------------------------------- */
+.role-switch .mode-btn { padding: 5px 12px; font-size: 11px; }
+
+/* -- App nav tabs ------------------------------------------ */
+.app-nav {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--card-border);
+  padding: 0 20px;
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.nav-tab {
+  padding: 12px 16px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: color .12s, border-color .12s;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+/* -- Main content region ----------------------------------- */
+.app-content {
+  flex: 1;
+  padding: 20px 20px 32px;
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* -- App footer -------------------------------------------- */
+.app-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--card-border);
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.footer-actions { display: flex; align-items: center; gap: 8px; }
+
+/* -- Generic badge ----------------------------------------- */
+.vk-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.vk-badge-blue   { background: var(--avail-bg); color: var(--blue); border: 1px solid #93c5fd; }
+.vk-badge-green  { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+.vk-badge-amber  { background: var(--amber-bg); color: var(--amber-text); border: 1px solid var(--amber-border); }
+.vk-badge-violet { background: #ede9fe; color: var(--violet); border: 1px solid #ddd6fe; }
+.vk-badge-muted  { background: #f3f4f6; color: var(--muted); border: 1px solid var(--card-border); }
+
+/* -- Empty state / view stub ------------------------------- */
+.view-stub { padding: 24px 0; }
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 48px 20px;
+  background: var(--card-bg);
+  border: 1px dashed var(--card-border);
+  border-radius: var(--radius);
+}
+.empty-state-icon { font-size: 32px; line-height: 1; opacity: .7; }
+.empty-state-msg  { font-size: 15px; font-weight: 700; color: var(--navy); }
+.empty-state-sub  { font-size: 12px; color: var(--muted); max-width: 420px; }
+
+/* -- Toast ------------------------------------------------- */
+.vk-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  max-width: 340px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(16,24,40,.16);
+  animation: vk-toast-in .16s ease-out;
+}
+.vk-toast-green { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+.vk-toast-blue  { background: var(--avail-bg); color: var(--blue); border: 1px solid #93c5fd; }
+.vk-toast-amber { background: var(--amber-bg); color: var(--amber-text); border: 1px solid var(--amber-border); }
+@keyframes vk-toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* -- Login role segment spacing ---------------------------- */
+.login-card .mode-control { width: 100%; }
+.login-card .mode-control .mode-btn { flex: 1; justify-content: center; }
+
 /* -- Responsive -------------------------------------------- */
 @media (max-width: 680px) {
   .site-header { padding: 0 14px; height: 48px; }
   .demo-banner { padding: 5px 14px; }
   .board-page  { padding: 12px 10px 28px; gap: 14px; }
+  .app-content { padding: 14px 12px 28px; }
+  .app-nav     { padding: 0 10px; }
   .stats-row   { grid-template-columns: repeat(2, 1fr); }
   .user-email  { display: none; }
   .mode-control { flex-wrap: wrap; }
+  .role-switch { flex-wrap: nowrap; }
 }
 
 @media (max-width: 420px) {

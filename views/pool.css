@@ -1,0 +1,631 @@
+/* views/pool.css — pool + availability-grid styles.
+   Base variables and shared components live in ../styles.css. */
+
+/* ============================================================
+   MASTER-DETAIL LAYOUT
+   ============================================================ */
+
+.pool-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 0;
+  min-height: 0;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+/* LEFT PANE */
+.pool-pane {
+  border-right: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pool-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--card-border);
+  background: var(--card-bg);
+  flex-shrink: 0;
+}
+
+.pool-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.pool-empty {
+  padding: 12px;
+}
+
+.pool-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* POOL FILTER BAR */
+.pool-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--card-border);
+  background: var(--page-bg);
+  flex-shrink: 0;
+}
+
+.pool-filter-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--card-bg);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background .1s, color .1s, border-color .1s;
+}
+.pool-filter-chip:hover {
+  background: var(--paper-200);
+  color: var(--text);
+}
+.pool-filter-chip.active {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+/* POOL ORIGIN BADGE (inline in rows) */
+.pool-origin-badge {
+  flex-shrink: 0;
+}
+
+/* vk-badge-navy is not in styles.css; define it here */
+.vk-badge-navy {
+  background: #e8edf6;
+  color: var(--navy);
+  border: 1px solid #b8c8de;
+}
+
+/* MODAL POOL NOTE */
+.pool-modal-pool-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 0 2px;
+}
+
+/* SUB ROW */
+.sub-row {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--card-border);
+  cursor: pointer;
+  transition: background .1s;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.sub-row:last-child { border-bottom: none; }
+.sub-row:hover { background: #faf7f2; }
+.sub-row.sub-row-selected {
+  background: #f0f5ff;
+  border-left: 3px solid var(--blue);
+  padding-left: 11px;
+}
+
+.sub-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sub-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.sub-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sub-name.sub-inactive { color: var(--muted); text-decoration: line-through; }
+
+.sub-status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.sub-status-badge.inactive {
+  background: #f0ece7;
+  color: var(--muted);
+  border: 1px solid var(--card-border);
+}
+
+.sub-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sub-rate {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.sub-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.sub-chip {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--avail-bg);
+  color: var(--blue);
+  border: 1px solid #93c5fd;
+  white-space: nowrap;
+}
+.sub-chip-more {
+  background: #f0ece7;
+  color: var(--muted);
+  border-color: var(--card-border);
+}
+
+/* RELIABILITY BAR */
+.reliability-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reliability-label {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.reliability-track {
+  flex: 1;
+  height: 4px;
+  background: var(--card-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.reliability-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .2s;
+}
+.reliability-fill.rel-hi  { background: var(--green); }
+.reliability-fill.rel-mid { background: var(--blue); }
+.reliability-fill.rel-lo  { background: var(--amber-text); }
+
+/* ROW ACTIONS */
+.sub-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+/* ============================================================
+   RIGHT PANE — DETAIL
+   ============================================================ */
+
+.detail-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.detail-empty {
+  justify-content: center;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--card-border);
+  flex-shrink: 0;
+}
+
+.detail-sub-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.detail-sub-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-sub-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.detail-sub-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* AVAILABILITY SUB-TABS */
+.avail-tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--card-border);
+  padding: 0 16px;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.avail-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 14px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: -1px;
+  transition: color .1s, border-color .1s;
+  white-space: nowrap;
+}
+.avail-tab-btn:hover { color: var(--text); }
+.avail-tab-btn.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+/* TAB CONTENT WRAPPER */
+.pool-avail-tab {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* GRID GUIDE STRIP */
+.pool-grid-guide {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding: 8px 16px 6px;
+}
+
+.pool-guide-instruction {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+/* GRID WRAPPER */
+.pool-grid-wrap {
+  overflow-x: auto;
+  padding: 6px 14px 4px;
+}
+
+/* ============================================================
+   AVAILABILITY GRID CLASSES
+   (mirrors Frånvarokollen styles; defined here because
+   Vikariekollen styles.css does not include them)
+   ============================================================ */
+
+.avail-grid {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: auto;
+}
+
+.corner-cell {
+  width: 48px;
+  min-width: 48px;
+}
+
+.day-header {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  padding: 4px 2px 6px;
+  width: 80px;
+  min-width: 58px;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--card-border);
+}
+
+.hour-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: right;
+  padding: 2px 8px 2px 0;
+  white-space: nowrap;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.slot {
+  width: 80px;
+  min-width: 58px;
+  height: 30px;
+  border: 1px solid var(--card-border);
+  border-radius: 4px;
+  cursor: pointer;
+  background: var(--card-bg);
+  transition: background .07s, border-color .07s;
+  user-select: none;
+  position: relative;
+}
+.slot:hover { background: #f4efe8; border-color: #b0bfe8; z-index: 1; }
+.slot.available {
+  background: var(--avail-bg);
+  border-color: var(--avail-border);
+}
+.slot.available::after {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--avail-dot);
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+.slot.available:hover { background: #c5d8ff; border-color: var(--blue-hover); }
+
+tbody tr:nth-child(odd) .slot           { background: #faf7f2; }
+tbody tr:nth-child(odd) .slot.available { background: var(--avail-bg); }
+tbody tr:nth-child(odd) .slot:hover     { background: #f4efe8; }
+
+.avail-grid td, .avail-grid th { padding: 2px 2px; }
+.avail-grid .hour-label { padding: 2px 8px 2px 0; }
+
+/* LEGEND (shared classes from sibling, also defined here for isolation) */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-left: 12px;
+  border-left: 1px solid var(--card-border);
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--card-border);
+  position: relative;
+}
+.legend-swatch.swatch-available {
+  background: var(--avail-bg);
+  border-color: var(--avail-border);
+}
+.legend-swatch.swatch-available::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--avail-dot);
+  transform: translate(-50%, -50%);
+}
+.legend-swatch.swatch-unavailable { background: var(--card-bg); }
+
+/* WEEK NAV */
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 8px 14px;
+}
+
+.week-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 190px;
+  text-align: center;
+}
+
+.pool-nav-badge-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 4px;
+}
+
+/* WEEK BADGE */
+.week-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px 4px;
+  border-radius: 20px;
+  letter-spacing: .2px;
+  display: inline-block;
+}
+.badge-default {
+  color: #2d6a4f;
+  background: #e8f5ee;
+}
+.badge-customised {
+  color: var(--amber-text);
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-border);
+}
+
+/* AVAIL FOOTER */
+.pool-avail-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px 12px;
+  border-top: 1px solid var(--card-border);
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.pool-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pool-status-line {
+  font-size: 11px;
+  color: var(--muted);
+}
+.pool-status-saved   { color: var(--green-text); font-weight: 600; }
+.pool-status-unsaved { color: var(--amber-text); font-weight: 500; }
+
+/* ============================================================
+   ACTIVATIONS
+   ============================================================ */
+
+.pool-activations {
+  border-top: 1px solid var(--card-border);
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pool-activations-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pool-activations-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.pool-activations-note {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.pool-activations-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.activation-date-input {
+  width: 150px;
+  padding: 5px 8px;
+  font-size: 13px;
+}
+
+.activation-state {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+}
+.act-on  { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+.act-off { background: #f0ece7; color: var(--muted); border: 1px solid var(--card-border); }
+
+/* ============================================================
+   MODAL FORM
+   ============================================================ */
+
+.pool-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pool-modal-err {
+  font-size: 12px;
+  color: var(--red);
+  background: var(--red-bg);
+  border: 1px solid #f5c6c2;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 2px;
+}
+
+.pool-notes-input {
+  resize: vertical;
+  min-height: 56px;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+/* ============================================================
+   RESPONSIVE — stack panes below ~680px
+   ============================================================ */
+
+@media (max-width: 680px) {
+  .pool-layout {
+    grid-template-columns: 1fr;
+  }
+  .pool-pane {
+    border-right: none;
+    border-bottom: 1px solid var(--card-border);
+    max-height: 360px;
+  }
+  .day-header, .slot { width: 58px; min-width: 46px; }
+  .week-label { min-width: 150px; }
+}
+
+@media (max-width: 420px) {
+  .pool-header { padding: 10px 12px 8px; }
+  .sub-row { padding: 8px 10px; }
+  .detail-header { padding: 10px 12px 8px; }
+}

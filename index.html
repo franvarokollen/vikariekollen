@@ -4,13 +4,41 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vikariekollen · Substitute booking</title>
-  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Brand typeface: Geist -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" />
+
+  <!-- Base + shell + shared component styles.
+       ?v= cache-bust: the dev server (serve.py) sends no-store, so this only
+       needs bumping if a browser ever pins a stale copy. -->
+  <link rel="stylesheet" href="styles.css?v=3" />
+  <!-- Per-view stylesheets -->
+  <link rel="stylesheet" href="views/board.css?v=3" />
+  <link rel="stylesheet" href="views/pool.css?v=3" />
+  <link rel="stylesheet" href="views/settings.css?v=3" />
+  <link rel="stylesheet" href="views/history.css?v=3" />
+  <link rel="stylesheet" href="views/sub.css?v=3" />
+  <link rel="stylesheet" href="views/staff.css?v=3" />
 </head>
 <body>
   <div id="app"></div>
 
-  <!-- adapter.js MUST load before app.js — it defines window.Adapter -->
-  <script src="adapter.js" defer></script>
-  <script src="app.js" defer></script>
+  <!-- LOAD ORDER (all `defer`, run in document order):
+       1. adapter.js  — data + logic layer (window.Adapter)
+       2. shell.js    — VK namespace: i18n, el, fmt, components
+       3. views/*.js  — assign VK.views.* (stubs; replaced per view)
+       4. app.js      — boot the shell LAST -->
+  <script src="version.js?v=3" defer></script>
+  <script src="adapter.js?v=3" defer></script>
+  <script src="shell.js?v=3" defer></script>
+  <script src="views/board.js?v=3" defer></script>
+  <script src="views/pool.js?v=3" defer></script>
+  <script src="views/settings.js?v=3" defer></script>
+  <script src="views/history.js?v=3" defer></script>
+  <script src="views/sub.js?v=3" defer></script>
+  <script src="views/staff.js?v=3" defer></script>
+  <script src="app.js?v=3" defer></script>
 </body>
 </html>

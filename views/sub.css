@@ -1,0 +1,579 @@
+/* views/sub.css — substitute-facing (offers + bookings) styles. Owned by the sub view-builder.
+   Base/shell/shared component styles live in ../styles.css. */
+
+/* ============================================================
+   Phone-first layout: narrow centered column, generous tap
+   targets, FVK-branded. Designed for 380 px; fine on desktop.
+   ============================================================ */
+
+/* -- Greeting header --------------------------------------- */
+.sub-greeting {
+  max-width: 440px;
+  margin: 0 auto 4px;
+  width: 100%;
+}
+
+.sub-greeting-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -.3px;
+  margin-bottom: 2px;
+}
+
+.sub-greeting-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* -- Base card --------------------------------------------- */
+.sub-card {
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.sub-card-empty {
+  border-style: dashed;
+}
+
+/* -- Offer card -------------------------------------------- */
+.sub-offer-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-offer-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 16px 12px;
+}
+
+.sub-offer-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sub-offer-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-offer-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.sub-meta-dot {
+  color: var(--card-border);
+}
+
+.sub-offer-teacher {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* -- Deadline line (cascade offers) ------------------------ */
+.sub-offer-deadline {
+  font-size: 12px;
+  color: #7a5200;
+  background: var(--amber-bg, #fffbeb);
+  border: 1px solid var(--amber-border, #f0d78a);
+  border-radius: 7px;
+  padding: 5px 12px;
+  margin: 0 16px 10px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* -- Accept / Decline buttons ------------------------------ */
+.sub-offer-actions {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 14px;
+}
+
+.sub-btn-accept {
+  flex: 1;
+  justify-content: center;
+  padding: 13px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  background: var(--blue);
+  color: #fff;
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+  font-family: inherit;
+  line-height: 1;
+}
+.sub-btn-accept:hover,
+.sub-btn-accept:active {
+  background: var(--blue-hover);
+  border-color: var(--blue-hover);
+}
+
+.sub-btn-decline {
+  flex: 1;
+  justify-content: center;
+  padding: 13px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+  font-family: inherit;
+  line-height: 1;
+}
+.sub-btn-decline:hover,
+.sub-btn-decline:active {
+  background: var(--red-bg);
+  color: var(--red);
+  border-color: #f5c6c2;
+}
+
+/* -- SMS/prod note below action buttons -------------------- */
+.sub-offer-sms-note {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 0 16px 14px;
+  line-height: 1.4;
+}
+
+/* -- Accepted success state -------------------------------- */
+.sub-offer-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 16px 14px;
+  padding: 12px 14px;
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  border-radius: 8px;
+}
+
+.sub-offer-success-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  color: var(--green);
+}
+
+.sub-offer-success-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-text);
+}
+
+.sub-offer-success-note {
+  font-size: 11px;
+  color: var(--green-text);
+  opacity: .8;
+  margin-top: 3px;
+  font-style: italic;
+}
+
+/* -- Declined state ---------------------------------------- */
+.sub-offer-declined {
+  margin: 0 16px 14px;
+  padding: 10px 12px;
+  background: var(--red-bg);
+  border: 1px solid #f5c6c2;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+}
+
+/* -- Queued state ------------------------------------------ */
+.sub-offer-queued {
+  margin: 0 16px 14px;
+  padding: 10px 12px;
+  background: #f0ece7;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* -- Booking card ------------------------------------------ */
+.sub-booking-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.sub-booking-when {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.sub-booking-date {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -.2px;
+}
+
+.sub-booking-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+}
+
+.sub-booking-subject {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.sub-booking-teacher {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.sub-booking-cost {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-text);
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  display: inline-block;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+/* -- Lesson plan section ----------------------------------- */
+.sub-lesson-plans {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.sub-btn-plan {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--avail-bg);
+  color: var(--blue);
+  border: 1px solid #93c5fd;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .12s, border-color .12s;
+}
+.sub-btn-plan:hover {
+  background: #c7d9fd;
+  border-color: var(--blue);
+}
+
+.sub-lesson-plan-soon {
+  font-size: 12px;
+  color: var(--muted);
+  background: #f0ece7;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-style: italic;
+}
+
+/* -- Narrow on very small screens (already designed for 380px;
+   just remove outer auto-margins at sub-380px breakpoint) --- */
+@media (max-width: 460px) {
+  .sub-greeting,
+  .sub-card {
+    max-width: 100%;
+  }
+}
+
+/* ============================================================
+   subAvailability view — phone-first availability editor
+   ============================================================ */
+
+.subavail-wrap {
+  max-width: 460px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Intro line */
+.subavail-intro {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Segmented control override — full width */
+.subavail-seg {
+  width: 100%;
+}
+.subavail-seg .mode-btn {
+  flex: 1;
+  justify-content: center;
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+/* Tab panel */
+.subavail-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Week navigator */
+.subavail-nav-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.subavail-week-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subavail-week-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--navy);
+  min-width: 0;
+}
+
+.subavail-nav-btn {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  font-size: 14px;
+}
+
+/* Week badge */
+.subavail-week-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-default {
+  background: #eef2f8;
+  color: var(--navy);
+  border: 1px solid #c4d0e8;
+}
+
+.badge-customised {
+  background: var(--avail-bg, #dbeafe);
+  color: var(--blue);
+  border: 1px solid #93c5fd;
+}
+
+.badge-away {
+  background: var(--red-bg, #fef2f2);
+  color: var(--red, #dc2626);
+  border: 1px solid #fca5a5;
+}
+
+/* Guide / legend */
+.subavail-guide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.subavail-instruction {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.subavail-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.subavail-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.subavail-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--card-border);
+}
+
+.subavail-swatch-avail {
+  background: var(--blue, #0F71F6);
+  border-color: var(--blue, #0F71F6);
+}
+
+.subavail-swatch-unavail {
+  background: var(--card-bg, #faf8f6);
+}
+
+/* Grid wrapper — horizontal scroll on very small screens */
+.subavail-grid-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+}
+
+/* Availability grid */
+.subavail-grid {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 300px;
+  table-layout: fixed;
+}
+
+.subavail-corner {
+  width: 44px;
+}
+
+.subavail-day-header {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  padding: 8px 4px 6px;
+  border-bottom: 1px solid var(--card-border);
+  letter-spacing: .3px;
+}
+
+.subavail-hour-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  padding: 0 8px 0 6px;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+}
+
+/* Tap cells — large enough for a finger (min 44px height) */
+.subavail-slot {
+  height: 44px;
+  min-width: 44px;
+  background: var(--card-bg, #faf8f6);
+  border: 1px solid var(--card-border, #e5e0d8);
+  cursor: pointer;
+  transition: background .1s, border-color .1s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.subavail-slot.available {
+  background: var(--blue, #0F71F6);
+  border-color: var(--blue, #0F71F6);
+}
+
+.subavail-slot:hover {
+  opacity: .85;
+}
+
+.subavail-slot:active {
+  opacity: .7;
+}
+
+/* Footer row: reset left, status + save right */
+.subavail-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.subavail-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subavail-save-btn {
+  padding: 10px 22px;
+  font-size: 14px;
+}
+
+.subavail-reset-btn {
+  font-size: 12px;
+  padding: 8px 14px;
+}
+
+/* Status label */
+.subavail-status {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.subavail-status-unsaved {
+  color: var(--red, #dc2626);
+}
+
+.subavail-status-saved {
+  color: var(--green-text, #166534);
+}
+
+/* Collapse outer padding on tiny screens */
+@media (max-width: 380px) {
+  .subavail-wrap {
+    max-width: 100%;
+  }
+  .subavail-slot {
+    height: 40px;
+    min-width: 38px;
+  }
+}

@@ -1,0 +1,190 @@
+/* ============================================================
+   views/board.css — Board view–specific styles
+   Shared tokens and base components live in ../styles.css.
+   ============================================================ */
+
+/* -- Pool badge: navy variant (not in styles.css) ---------- */
+.vk-badge-navy {
+  background: #e8edf6;
+  color: var(--navy);
+  border: 1px solid #b8c8de;
+}
+
+/* -- New-gap form ------------------------------------------ */
+.board-new-gap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.board-new-gap-intro {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.board-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.board-field-error {
+  font-size: 11px;
+  color: var(--red);
+  display: none;
+  margin-top: 2px;
+}
+
+/* -- Gaps filter (segmentedControl inside section header) --- */
+.gaps-filter {
+  margin-left: auto;
+}
+
+.gaps-filter .mode-btn {
+  padding: 4px 12px;
+  font-size: 11px;
+}
+
+/* -- Gap row: closed (filled/expired) is not pointer-ish ---- */
+.gap-row.closed .gap-row-main {
+  cursor: default;
+}
+
+/* -- Offer panel — mode section ----------------------------- */
+.offer-panel-mode-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.board-mode-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.board-mode-lock {
+  font-size: 11px;
+  color: var(--amber-text);
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* -- Cancel offer link -------------------------------------- */
+.board-cancel-row {
+  margin-top: -4px;
+}
+
+.board-cancel-link {
+  color: var(--red) !important;
+  font-size: 11px;
+  padding: 2px 0;
+}
+.board-cancel-link:hover {
+  background: transparent !important;
+  text-decoration: underline;
+}
+
+/* -- Candidate row: ensure actions wrap to own right-aligned
+   line on narrow viewports (avoids cramped single-row) ------ */
+.candidate-row {
+  flex-wrap: wrap;
+}
+
+.candidate-actions {
+  flex-basis: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+@media (min-width: 540px) {
+  .candidate-actions {
+    flex-basis: auto;
+  }
+}
+
+/* -- Panel "← Tillsätt" hint for admin_assign mode --------- */
+.panel-action-row .panel-note {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* -- Gap-row closed hover suppression ----------------------- */
+.gap-row.closed:hover .gap-row-main {
+  background: inherit;
+}
+
+/* -- Offer panel top border separation ---------------------- */
+.gap-row.expanded .offer-panel {
+  border-top: 1px solid var(--card-border);
+}
+
+/* -- Mobile: stat cards 2-col below 500px ------------------- */
+@media (max-width: 500px) {
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .offer-panel {
+    padding: 12px 12px 14px;
+  }
+
+  .board-top-row {
+    flex-wrap: wrap;
+  }
+}
+
+/* -- Cascade timing line on contacted candidate ------------- */
+.cascade-timing-line {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* -- Push-to-next button ------------------------------------ */
+.board-push-row {
+  margin-top: 2px;
+}
+
+.board-push-btn {
+  font-size: 12px;
+  padding: 5px 12px;
+  color: var(--navy);
+  border-color: var(--card-border);
+  gap: 5px;
+}
+
+.board-push-btn:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: #eef4ff;
+}
+
+/* -- Very narrow (380px floor) ------------------------------ */
+@media (max-width: 420px) {
+  .gap-row-main {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .gaps-section-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .gaps-filter {
+    margin-left: 0;
+  }
+}

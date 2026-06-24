@@ -1,0 +1,394 @@
+/* ============================================================
+   views/staff.css — Internal-staff-facing views.
+   Phone-first: 440px max column, warm paper palette, large tap
+   targets. Brand tokens live in ../styles.css.
+   ============================================================ */
+
+/* -- Greeting header --------------------------------------- */
+.staff-greeting {
+  max-width: 440px;
+  margin: 0 auto 4px;
+  width: 100%;
+}
+
+.staff-greeting-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -.3px;
+  margin-bottom: 2px;
+}
+
+.staff-greeting-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* -- Base card --------------------------------------------- */
+.staff-card {
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.staff-card-empty {
+  border-style: dashed;
+}
+
+/* -- Request card ------------------------------------------ */
+.staff-req-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.staff-req-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 16px 12px;
+}
+
+.staff-req-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.staff-req-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-req-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.staff-meta-dot {
+  color: var(--card-border);
+}
+
+.staff-req-teacher {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* -- Accept / Decline buttons ------------------------------ */
+.staff-req-actions {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px 14px;
+}
+
+.staff-btn-accept {
+  flex: 1;
+  justify-content: center;
+  padding: 13px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  background: var(--blue);
+  color: #fff;
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+  font-family: inherit;
+  line-height: 1;
+}
+.staff-btn-accept:hover,
+.staff-btn-accept:active {
+  background: var(--blue-hover);
+  border-color: var(--blue-hover);
+}
+
+.staff-btn-decline {
+  flex: 1;
+  justify-content: center;
+  padding: 13px 10px;
+  font-size: 15px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .12s, color .12s, border-color .12s;
+  font-family: inherit;
+  line-height: 1;
+}
+.staff-btn-decline:hover,
+.staff-btn-decline:active {
+  background: var(--red-bg);
+  color: var(--red);
+  border-color: #f5c6c2;
+}
+
+/* -- Production-note below action buttons ------------------ */
+.staff-req-sms-note {
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 0 16px 14px;
+  line-height: 1.4;
+}
+
+/* -- Accepted success state -------------------------------- */
+.staff-req-success {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 16px 14px;
+  padding: 12px 14px;
+  background: var(--green-bg);
+  border: 1px solid var(--green-border);
+  border-radius: 8px;
+}
+
+.staff-req-success-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  color: var(--green);
+}
+
+.staff-req-success-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-text);
+}
+
+.staff-req-success-note {
+  font-size: 11px;
+  color: var(--green-text);
+  opacity: .8;
+  margin-top: 3px;
+  font-style: italic;
+}
+
+/* -- Declined state ---------------------------------------- */
+.staff-req-declined {
+  margin: 0 16px 14px;
+  padding: 10px 12px;
+  background: var(--red-bg);
+  border: 1px solid #f5c6c2;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+}
+
+/* -- Queued state ------------------------------------------ */
+.staff-req-queued {
+  margin: 0 16px 14px;
+  padding: 10px 12px;
+  background: #f0ece7;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* -- Cover card -------------------------------------------- */
+.staff-cover-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.staff-cover-when {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.staff-cover-date {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -.2px;
+}
+
+.staff-cover-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+}
+
+.staff-cover-subject {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.staff-cover-teacher {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+/* -- Lesson plan section (covers) -------------------------- */
+.staff-lesson-plans {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.staff-btn-plan {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--avail-bg);
+  color: var(--blue);
+  border: 1px solid #93c5fd;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .12s, border-color .12s;
+}
+.staff-btn-plan:hover {
+  background: #c7d9fd;
+  border-color: var(--blue);
+}
+
+.staff-lesson-plan-soon {
+  font-size: 12px;
+  color: var(--muted);
+  background: #f0ece7;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-style: italic;
+}
+
+/* -- Workload card ----------------------------------------- */
+.staff-workload-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px 16px;
+  gap: 14px;
+}
+
+.staff-workload-heading {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.staff-workload-empty {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Big figure block */
+.staff-workload-figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 4px;
+}
+
+.staff-workload-big {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--navy);
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.staff-workload-of {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.staff-workload-figure-label {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 4px;
+}
+
+.staff-workload-limit-label {
+  width: 100%;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Progress bar */
+.staff-workload-bar-track {
+  height: 10px;
+  background: #e8e3dc;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.staff-workload-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .3s ease;
+}
+
+.staff-workload-bar-green { background: var(--green); }
+.staff-workload-bar-amber { background: var(--amber, #d97706); }
+.staff-workload-bar-red   { background: var(--red); }
+
+.staff-workload-pct-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: -8px;
+  text-align: right;
+}
+
+/* Hours row */
+.staff-workload-hours {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.staff-workload-hours-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy);
+}
+
+/* Explanatory note */
+.staff-workload-note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  padding-top: 4px;
+  border-top: 1px solid var(--card-border);
+}
+
+/* -- Narrow breakpoint (380px+) ---------------------------- */
+@media (max-width: 460px) {
+  .staff-greeting,
+  .staff-card {
+    max-width: 100%;
+  }
+}

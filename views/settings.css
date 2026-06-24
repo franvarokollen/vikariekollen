@@ -1,0 +1,657 @@
+/* views/settings.css — settings styles. Owned by the settings view-builder.
+   Base/shell/shared component styles live in ../styles.css. */
+
+/* ── Page layout ──────────────────────────────────────────── */
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 640px;
+}
+
+.settings-page-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -.2px;
+}
+
+/* ── Info note ────────────────────────────────────────────── */
+.settings-info-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--avail-bg);
+  border: 1px solid #93c5fd;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 12px;
+  color: var(--blue);
+  line-height: 1.5;
+}
+
+.settings-info-icon {
+  font-style: normal;
+  font-size: 13px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.settings-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.settings-note {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.settings-note-tokens {
+  font-family: 'Courier New', monospace;
+  background: #faf7f2;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── Explainer ────────────────────────────────────────────── */
+.settings-explainer {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  padding-left: 2px;
+  min-height: 16px;
+}
+
+/* ── Cascade step: current value ─────────────────────────── */
+.settings-step-current {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+/* ── Cascade step: preset chips ──────────────────────────── */
+.settings-step-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.settings-step-chip {
+  padding: 5px 12px;
+  border: 1.5px solid var(--card-border);
+  border-radius: 20px;
+  background: var(--card-bg);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color .12s, background .12s, color .12s;
+  font-family: inherit;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.settings-step-chip:hover {
+  border-color: var(--blue);
+  background: #eef4ff;
+  color: var(--blue);
+}
+
+.settings-step-chip.active {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+
+/* ── Cascade step: custom row ────────────────────────────── */
+.settings-step-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.settings-step-custom-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.settings-step-custom-num {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--card-bg);
+  font-family: inherit;
+  outline: none;
+  transition: border-color .12s, box-shadow .12s;
+}
+
+.settings-step-custom-num:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(15,113,246,.10);
+}
+
+.settings-step-custom-unit {
+  padding: 6px 8px;
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--card-bg);
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .12s;
+}
+
+.settings-step-custom-unit:focus {
+  border-color: var(--blue);
+}
+
+/* ── Channel toggles ──────────────────────────────────────── */
+.settings-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.settings-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.settings-toggle-track {
+  display: inline-flex;
+  align-items: center;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--card-border);
+  border: 1px solid var(--card-border);
+  position: relative;
+  flex-shrink: 0;
+  transition: background .15s, border-color .15s;
+}
+
+.settings-toggle-input:checked + .settings-toggle-track {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.settings-toggle-thumb {
+  position: absolute;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.18);
+  transition: left .15s;
+}
+
+.settings-toggle-input:checked + .settings-toggle-track .settings-toggle-thumb {
+  left: 18px;
+}
+
+.settings-toggle-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Template textareas ───────────────────────────────────── */
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.settings-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.settings-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--card-bg);
+  font-family: 'Courier New', monospace;
+  resize: vertical;
+  line-height: 1.55;
+  outline: none;
+  transition: border-color .12s, box-shadow .12s;
+}
+.settings-textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+}
+
+/* ── Save button row ──────────────────────────────────────── */
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-save-btn {
+  padding: 8px 20px;
+  font-size: 13px;
+}
+
+/* ── Option-card list (source + automation) ───────────────── */
+.settings-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-option-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+  user-select: none;
+  position: relative;
+}
+
+.settings-option-card:hover {
+  border-color: var(--blue);
+  background: #f5f8ff;
+}
+
+.settings-option-card.selected {
+  border-color: var(--blue);
+  background: #eef4ff;
+}
+
+/* Warn variant (auto level) */
+.settings-option-card--warn {
+  border-color: var(--amber-border);
+  background: var(--amber-bg);
+}
+
+.settings-option-card--warn:hover,
+.settings-option-card--warn.selected {
+  border-color: #d4960a;
+  background: #fef3c7;
+}
+
+.settings-option-radio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.settings-option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-option-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.3;
+}
+
+.settings-option-card.selected .settings-option-label {
+  color: var(--blue);
+}
+
+.settings-option-card--warn .settings-option-label,
+.settings-option-card--warn.selected .settings-option-label {
+  color: var(--amber-text);
+}
+
+.settings-option-desc {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* ── Automation warning callout ───────────────────────────── */
+.settings-auto-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 7px 10px;
+  background: #fff4e5;
+  border: 1px solid #f0c060;
+  border-radius: 6px;
+  font-size: 11.5px;
+  color: #7c4b00;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.settings-auto-warn-icon {
+  flex-shrink: 0;
+  font-size: 13px;
+  margin-top: 0;
+  color: #c07000;
+}
+
+/* ── Tier-list editor ─────────────────────────────────────── */
+.settings-tier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.settings-tier-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1.5px solid var(--card-border);
+  border-radius: 8px;
+  background: var(--card-bg);
+  transition: border-color .12s, background .12s, opacity .12s;
+}
+
+.settings-tier-row--disabled {
+  opacity: .5;
+  background: #faf7f2;
+}
+
+.settings-tier-rank {
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-tier-row--disabled .settings-tier-rank {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.settings-tier-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-tier-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  line-height: 1.3;
+}
+
+.settings-tier-row--disabled .settings-tier-label {
+  color: var(--muted);
+}
+
+.settings-tier-desc {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.settings-tier-last-resort {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #f0c060;
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+/* Tier toggle — reuses existing track/thumb; no extra track CSS needed */
+.settings-tier-toggle {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* ▲/▼ reorder buttons */
+.settings-tier-arrows {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-tier-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 20px;
+  border: 1px solid var(--card-border);
+  border-radius: 5px;
+  background: var(--card-bg);
+  color: var(--navy);
+  font-size: 9px;
+  cursor: pointer;
+  transition: background .1s, border-color .1s;
+  padding: 0;
+  line-height: 1;
+}
+
+.settings-tier-btn:hover:not([disabled]) {
+  background: #eef4ff;
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.settings-tier-btn[disabled],
+.settings-tier-btn.disabled {
+  opacity: .32;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Plugin status card ───────────────────────────────────── */
+.settings-plugin-card {
+  gap: 8px;
+}
+
+.settings-plugin-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.settings-plugin-header .settings-section-title {
+  flex-shrink: 0;
+}
+
+.settings-plugin-value {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settings-plugin-value--plugged_in {
+  color: var(--blue);
+}
+
+.settings-plugin-value--standalone {
+  color: var(--muted);
+}
+
+/* ── Subjects & duties list ───────────────────────────────── */
+.settings-subjects-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.settings-subjects-empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 2px;
+}
+
+.settings-subject-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px 3px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.settings-subject-chip--teaching {
+  background: #eef4ff;
+  border-color: #b8d0f8;
+  color: var(--blue);
+}
+
+.settings-subject-chip--duty {
+  background: #fef9ec;
+  border-color: #f0d78a;
+  color: #7a5200;
+}
+
+.settings-subject-chip-label {
+  white-space: nowrap;
+}
+
+.settings-subject-chip-type {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  opacity: .75;
+}
+
+.settings-subject-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: inherit;
+  opacity: .55;
+  padding: 0;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: opacity .12s, background .12s;
+}
+
+.settings-subject-remove:hover {
+  opacity: 1;
+  background: rgba(0,0,0,.08);
+}
+
+/* ── Subject add row ──────────────────────────────────────── */
+.settings-subject-add-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-subject-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 6px 10px;
+  border: 1px solid var(--card-border);
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--card-bg);
+  outline: none;
+  font-family: inherit;
+  transition: border-color .12s, box-shadow .12s;
+}
+
+.settings-subject-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(15,113,246,.10);
+}
+
+.settings-subject-add-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.settings-subject-add-error {
+  font-size: 11px;
+  color: var(--red);
+  min-height: 14px;
+  padding-left: 2px;
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .settings-card   { padding: 13px 13px; }
+  .settings-page   { gap: 12px; }
+  .settings-option-card { padding: 9px 10px; }
+  .settings-tier-row { padding: 8px 9px; gap: 8px; }
+  .settings-tier-rank { width: 18px; font-size: 12px; }
+}
