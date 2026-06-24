@@ -4,9 +4,19 @@
    targets. Brand tokens live in ../styles.css.
    ============================================================ */
 
+/* -- Responsive card grid ---------------------------------- */
+.staff-card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 /* -- Greeting header --------------------------------------- */
 .staff-greeting {
-  max-width: 440px;
+  max-width: 1000px;
   margin: 0 auto 4px;
   width: 100%;
 }
@@ -26,9 +36,7 @@
 
 /* -- Base card --------------------------------------------- */
 .staff-card {
-  max-width: 440px;
   width: 100%;
-  margin: 0 auto;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
@@ -205,7 +213,7 @@
 
 /* -- Section headings (upcoming / past) -------------------- */
 .staff-section-heading {
-  max-width: 440px;
+  max-width: 1000px;
   width: 100%;
   margin: 14px auto 6px;
   font-size: 12px;
@@ -223,7 +231,7 @@
 
 /* Empty line within a section */
 .staff-section-empty {
-  max-width: 440px;
+  max-width: 1000px;
   width: 100%;
   margin: 0 auto;
   font-size: 13px;
@@ -234,7 +242,7 @@
 
 /* "+ N äldre" overflow indicator */
 .staff-older-line {
-  max-width: 440px;
+  max-width: 1000px;
   width: 100%;
   margin: 6px auto 0;
   font-size: 12px;
@@ -484,10 +492,9 @@
   border-top: 1px solid var(--card-border);
 }
 
-/* -- Narrow breakpoint (380px+) ---------------------------- */
+/* -- Narrow breakpoint: greeting fills viewport, single-col via auto-fit --- */
 @media (max-width: 460px) {
-  .staff-greeting,
-  .staff-card {
+  .staff-greeting {
     max-width: 100%;
   }
 }

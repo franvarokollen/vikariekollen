@@ -142,6 +142,9 @@
     }
 
     // ── Active offers ──────────────────────────────────────
+    const activeGrid = el('div', { className: 'sub-card-list' });
+    container.appendChild(activeGrid);
+
     activeOffers.forEach(function (offer) {
       const gap = offer.gap || {};
       const state = offer.state || 'pending';
@@ -252,7 +255,7 @@
         return card;
       }
 
-      container.appendChild(renderCard(null));
+      activeGrid.appendChild(renderCard(null));
     });
 
     // ── Moved-on offers (past / retrospective) ─────────────
@@ -260,6 +263,9 @@
       container.appendChild(
         el('div', { className: 'sub-moved-on-heading' }, T('movedOnGroup'))
       );
+
+      const movedOnGrid = el('div', { className: 'sub-card-list' });
+      container.appendChild(movedOnGrid);
 
       movedOnOffers.forEach(function (offer) {
         const gap = offer.gap || {};
@@ -299,7 +305,7 @@
           waitTimeLine
         );
 
-        container.appendChild(card);
+        movedOnGrid.appendChild(card);
       });
     }
   };
@@ -401,8 +407,10 @@
     );
 
     if (upcoming.length) {
+      const upcomingGrid = el('div', { className: 'sub-card-list' });
+      container.appendChild(upcomingGrid);
       upcoming.forEach(function (b) {
-        container.appendChild(renderBookingCard(b, false));
+        upcomingGrid.appendChild(renderBookingCard(b, false));
       });
     } else {
       container.appendChild(
@@ -419,9 +427,11 @@
         )
       );
 
+      const pastGrid = el('div', { className: 'sub-card-list' });
+      container.appendChild(pastGrid);
       const visible = past.slice(0, PAST_VISIBLE);
       visible.forEach(function (b) {
-        container.appendChild(renderBookingCard(b, true));
+        pastGrid.appendChild(renderBookingCard(b, true));
       });
 
       if (past.length > PAST_VISIBLE) {

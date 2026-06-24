@@ -169,6 +169,9 @@
       return;
     }
 
+    const reqGrid = el('div', { className: 'staff-card-list' });
+    container.appendChild(reqGrid);
+
     reqs.forEach(function (req) {
       const gap      = req.gap || {};
       const state    = req.state || 'pending';
@@ -259,7 +262,7 @@
         return card;
       }
 
-      container.appendChild(renderCard(null));
+      reqGrid.appendChild(renderCard(null));
     });
   };
 
@@ -352,8 +355,10 @@
     );
 
     if (upcoming.length) {
+      const upcomingGrid = el('div', { className: 'staff-card-list' });
+      container.appendChild(upcomingGrid);
       upcoming.forEach(function (c) {
-        container.appendChild(renderCoverCard(c, false));
+        upcomingGrid.appendChild(renderCoverCard(c, false));
       });
     } else {
       container.appendChild(
@@ -370,9 +375,11 @@
         )
       );
 
+      const pastGrid = el('div', { className: 'staff-card-list' });
+      container.appendChild(pastGrid);
       const visible = past.slice(0, PAST_VISIBLE);
       visible.forEach(function (c) {
-        container.appendChild(renderCoverCard(c, true));
+        pastGrid.appendChild(renderCoverCard(c, true));
       });
 
       if (past.length > PAST_VISIBLE) {

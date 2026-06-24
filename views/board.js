@@ -260,7 +260,9 @@
           components.emptyState('📋', T('noGaps'), T('noGapsSub'))
         );
       } else {
-        gaps.forEach(gap => section.appendChild(buildGapRow(gap)));
+        const gapList = el('div', { className: 'gap-list' });
+        gaps.forEach(gap => gapList.appendChild(buildGapRow(gap)));
+        section.appendChild(gapList);
       }
 
       container.appendChild(section);

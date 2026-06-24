@@ -6,9 +6,19 @@
    targets, FVK-branded. Designed for 380 px; fine on desktop.
    ============================================================ */
 
+/* -- Responsive card grid ---------------------------------- */
+.sub-card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 /* -- Greeting header --------------------------------------- */
 .sub-greeting {
-  max-width: 440px;
+  max-width: 1000px;
   margin: 0 auto 4px;
   width: 100%;
 }
@@ -28,9 +38,7 @@
 
 /* -- Base card --------------------------------------------- */
 .sub-card {
-  max-width: 440px;
   width: 100%;
-  margin: 0 auto;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
@@ -358,7 +366,7 @@
 
 /* -- Section headings (upcoming / past) -------------------- */
 .sub-section-heading {
-  max-width: 440px;
+  max-width: 1000px;
   width: 100%;
   margin: 14px auto 6px;
   font-size: 12px;
@@ -376,7 +384,7 @@
 
 /* Empty line within a section */
 .sub-section-empty {
-  max-width: 440px;
+  max-width: 1000px;
   width: 100%;
   margin: 0 auto;
   font-size: 13px;
@@ -387,7 +395,7 @@
 
 /* "+ N äldre" overflow indicator */
 .sub-older-line {
-  max-width: 440px;
+  max-width: 1000px;
   width: 100%;
   margin: 6px auto 0;
   font-size: 12px;
@@ -412,7 +420,7 @@
 
 /* -- Moved-on (past) offers -------------------------------- */
 .sub-moved-on-heading {
-  max-width: 440px;
+  max-width: 1000px;
   width: 100%;
   margin: 14px auto 4px;
   font-size: 11px;
@@ -442,11 +450,10 @@
   margin-top: 2px;
 }
 
-/* -- Narrow on very small screens (already designed for 380px;
-   just remove outer auto-margins at sub-380px breakpoint) --- */
+/* -- Narrow on very small screens: greeting already 100% via auto-margins;
+   single-column falls out of auto-fit naturally --- */
 @media (max-width: 460px) {
-  .sub-greeting,
-  .sub-card {
+  .sub-greeting {
     max-width: 100%;
   }
 }
