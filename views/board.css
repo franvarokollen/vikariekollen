@@ -48,16 +48,9 @@
   font-size: 11px;
 }
 
-/* -- Gap list: responsive grid of gap cards ----------------- */
+/* -- Gap list: single-column list (rows separated by .gap-row borders) --- */
 .gap-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
-}
-
-/* Expanded gap spans all columns so the offer panel gets full width */
-.gap-row.expanded {
-  grid-column: 1 / -1;
+  display: block;
 }
 
 /* -- Gap row: closed (filled/expired) is not pointer-ish ---- */
