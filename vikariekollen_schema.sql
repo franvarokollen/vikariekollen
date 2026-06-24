@@ -95,6 +95,15 @@ alter table public.external_subs
 alter table public.external_subs
   add column if not exists active boolean not null default true;
 
+-- joined_at — "member since" date for the sub (when they entered the pool).
+-- Purely informational (the portal shows it + a lifetime cover count, which
+-- is COMPUTED from cover_assignments, not stored). staff_members carry the
+-- same notion via their existing employment/created date; in the prototype
+-- both external_subs and staff_members get a seeded `joinedAt` (ISO date,
+-- ~5–6 months back) and `lifetimeCovers` is derived from assignments.
+alter table public.external_subs
+  add column if not exists joined_at date;
+
 -- ----------------------------------------------------------------------------
 -- 0c. school_subjects — the per-school, MUTABLE subject catalogue the matcher
 --     reads to decide QUALIFICATION. Two kinds of entry:

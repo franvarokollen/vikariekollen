@@ -86,6 +86,8 @@
       relDeclined:        'Tackade nej',
       relNoResponse:      'Inget svar',
       relLastActivity:    'Senaste aktivitet',
+      relSince:           'Vikarie sedan',
+      relLifetimeUnit:    'pass totalt',
       relNoHistory:       'Ingen historik än',
       relNote:            'Pålitlighet beräknas från svarshistorik och styr matchningens rankning.',
     },
@@ -158,6 +160,8 @@
       relDeclined:        'Declined',
       relNoResponse:      'No response',
       relLastActivity:    'Last activity',
+      relSince:           'Substitute since',
+      relLifetimeUnit:    'covers total',
       relNoHistory:       'No history yet',
       relNote:            'Reliability is calculated from response history and drives match ranking.',
     },
@@ -669,6 +673,16 @@
           T('relLastActivity') + ': ' + lastStr
         )
       );
+
+      // Member since + lifetime covers
+      if (detail.joinedAt) {
+        panel.appendChild(
+          el('div', { className: 'pool-rel-last' },
+            T('relSince') + ' ' + VK.fmt.date(detail.joinedAt) +
+            ' · ' + (Number(detail.lifetimeCovers) || 0) + ' ' + T('relLifetimeUnit')
+          )
+        );
+      }
 
       panel.appendChild(
         el('div', { className: 'pool-rel-note' }, T('relNote'))

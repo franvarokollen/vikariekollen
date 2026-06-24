@@ -189,6 +189,16 @@
   const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun',
                        'Jul','Aug','Sep','Oct','Nov','Dec'];
 
+  // epoch-ms → "YYYY-MM-DD" (local). Used for deterministic seeded dates
+  // (joinedAt, historical cover dates) derived purely from BASE_NOW offsets.
+  function _isoDay(ms) {
+    const d = new Date(ms);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
   // dayIndex (0=Mon..6=Sun) for an ISO date string "YYYY-MM-DD"
   function _dayIndexOf(isoDate) {
     const d = new Date(isoDate + 'T00:00:00');
@@ -261,6 +271,14 @@
   // Loads ONCE if the store is empty; then fully mutable + persisted.
   // ----------------------------------------------------------
   function makeSeed() {
+    // Deterministic token generator for the SEED only — shadows the outer
+    // random _token() so resetDemo() produces a byte-identical store every
+    // time (the runtime _token() outside the seed stays random, matching the
+    // real backend's gen_random_uuid()). These tokens are opaque response
+    // handles; nothing in business logic depends on their value.
+    let _seedTokN = 0;
+    const _token = () => `tok-seed-${(_seedTokN++).toString(36).padStart(4, '0')}`;
+
     // Demo week is 2026-W26. Monday = 2026-06-22.
     // Activation/gap dates land Mon..Thu of that week.
     const subjectsPool = {
@@ -296,7 +314,13 @@
       { id: 'sub-8',  name: 'Sara Lindqvist', email: 'sara.lindqvist@vik.se', phone: '+46701000008', subjects: subjectsPool['sub-8'],  hourlyRate: 285, origin: 'fvk', active: true,  notes: '' },
       { id: 'sub-9',  name: 'Lars Ek',        email: 'lars.ek@vik.se',        phone: '+46701000009', subjects: subjectsPool['sub-9'],  hourlyRate: 305, origin: 'fvk', active: true,  notes: 'Idrottslärare i grunden.' },
       { id: 'sub-10', name: 'Lena Persson',   email: 'lena.persson@vik.se',   phone: '+46701000010', subjects: subjectsPool['sub-10'], hourlyRate: 270, origin: 'fvk', active: false, notes: 'Pausad tills vidare.' },
-    ].map(s => ({ ...s, initials: _initials(s.name) }));
+    ].map((s, i) => ({
+      ...s,
+      initials: _initials(s.name),
+      // joinedAt — "member since", spread 5–6 months back from BASE_NOW so the
+      // school reads as an established operation. Deterministic per index.
+      joinedAt: _isoDay(BASE_NOW - (150 + i * 6) * 86400000),
+    }));
 
     // ----------------------------------------------------------
     // INTERNAL STAFF — cover candidates that live INSIDE the school.
@@ -319,7 +343,13 @@
       { id: 'staff-7', staffCode: 'P07', displayName: 'Sara Wik',        email: 'sara.wik@skola.se',        role: 'teaching',  contractPct: 50,  subjects: ['Bild','Slöjd'],         internalRate: 0,   coverLimit: 4 },
       // a structural/non-teaching member — never a cover candidate
       { id: 'staff-8', staffCode: 'P08', displayName: 'Bengt Ahl',       email: 'bengt.ahl@skola.se',       role: 'structural', contractPct: 100, subjects: [],                       internalRate: 0,   coverLimit: 0 },
-    ].map(m => ({ ...m, initials: _initials(m.displayName) }));
+    ].map((m, i) => ({
+      ...m,
+      initials: _initials(m.displayName),
+      // staff "member since" — they predate the externals (employed before the
+      // school adopted VK), so push them a bit further back, ~6+ months.
+      joinedAt: _isoDay(BASE_NOW - (175 + i * 5) * 86400000),
+    }));
 
     // Staff teaching schedules — keyed by staffId → array of lessons
     // they teach: { date, startTime, endTime }. A staff member is
@@ -392,6 +422,7 @@
       '2026-06-23': ['sub-1','sub-2','sub-4','sub-6','sub-7','sub-8','sub-9'],
       '2026-06-24': ['sub-1','sub-2','sub-4','sub-5','sub-6','sub-7','sub-8','sub-9'],
       '2026-06-25': ['sub-1','sub-2','sub-4','sub-5','sub-7','sub-8','sub-9'],
+      '2026-06-26': ['sub-1','sub-2','sub-4','sub-5','sub-7','sub-8','sub-9'],
     };
 
     // Lessons — period context for gaps + future lesson-plan attach.
@@ -403,7 +434,15 @@
       { id: 'les-5', date: '2026-06-22', subject: 'Engelska',  group: '8A', startTime: '08:20', endTime: '10:05', teacherName: 'Petra Holm',     planUrl: null },
     ];
 
-    // Gaps — a realistic week in mixed states.
+    // Gaps — a realistic week in mixed states, now FULLER so the board reads
+    // like a busy live week and EVERY demo sub/staff has multiple live offers.
+    // The original 7 gaps keep the coordinator-board narrative (a mid-flight
+    // cascade, an open_pool, an admin-filled external, an internal fill, an
+    // expired cascade, an unsent duty). gaps 8–14 add MORE live offers:
+    //   - two extra open_pool gaps on common subjects (Matematik, Engelska,
+    //     Idrott) so many subs get SIMULTANEOUS offers (open_pool = contact all)
+    //   - an extra mid-flight cascade contacting internal staff + a sub
+    //   - a couple more filled/expired so the board stays varied
     // gap-6 is seeded FILLED BY INTERNAL STAFF so savings analytics are
     // non-zero out of the box. filledByType records which pool filled it.
     const gaps = [
@@ -416,6 +455,26 @@
       // a NON-TEACHING DUTY gap (Rastvakt) — no subject qualification needed,
       // so every candidate matches as qualified:true.
       { id: 'gap-7', teacherName: 'Eva Strand',     teacherInitials: 'ES', subject: 'Rastvakt',  group: '—',  date: '2026-06-24', startTime: '13:10', endTime: '14:00', lessonCount: 1, periodIds: [],        status: 'open_unsent', mode: 'cascade',      filledByType: null,           filledById: null,      filledBySubId: null,     filledBySubName: null },
+
+      // ── EXTRA LIVE GAPS (this week) — drive MULTIPLE offers per sub/staff ──
+      // gap-8 open_pool Matematik Thu PM — contacts every Matematik-capable
+      // sub + coverable staff at once (sub-1/2/3, staff-1/6).
+      { id: 'gap-8',  teacherName: 'Greta Sund',    teacherInitials: 'GS', subject: 'Matematik', group: '9B', date: '2026-06-25', startTime: '10:25', endTime: '12:10', lessonCount: 2, periodIds: [], status: 'open_pool', mode: 'open_pool', filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
+      // gap-9 open_pool Engelska Fri AM — contacts Engelska subs (sub-4/5) +
+      // staff-2.
+      { id: 'gap-9',  teacherName: 'Tomas Vik',     teacherInitials: 'TV', subject: 'Engelska',  group: '8C', date: '2026-06-26', startTime: '08:20', endTime: '10:05', lessonCount: 2, periodIds: [], status: 'open_pool', mode: 'open_pool', filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
+      // gap-10 open_pool Idrott Fri PM — duty-like common subject; contacts the
+      // Idrott sub (sub-9) + staff-4.
+      { id: 'gap-10', teacherName: 'Rita Falk',     teacherInitials: 'RF', subject: 'Idrott',    group: '7C', date: '2026-06-26', startTime: '13:10', endTime: '14:55', lessonCount: 2, periodIds: [], status: 'open_pool', mode: 'open_pool', filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
+      // gap-11 cascade Matematik Fri AM mid-flight — staff-1 contacted, subs queued.
+      { id: 'gap-11', teacherName: 'Olof Hägg',     teacherInitials: 'OH', subject: 'Matematik', group: '7A', date: '2026-06-26', startTime: '10:25', endTime: '12:10', lessonCount: 2, periodIds: [], status: 'cascade',   mode: 'cascade',   filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
+      // gap-12 open_pool Biologi/Kemi Thu AM — contacts sub-7/sub-8 + staff-3
+      // (a SECOND live pool offer for the Biologi/Kemi subs alongside gap-3).
+      { id: 'gap-12', teacherName: 'Inga Mård',     teacherInitials: 'IM', subject: 'Kemi',      group: '9C', date: '2026-06-25', startTime: '08:20', endTime: '10:05', lessonCount: 2, periodIds: [], status: 'open_pool', mode: 'open_pool', filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
+      // gap-13 filled external this week — keeps "filled" representation varied.
+      { id: 'gap-13', teacherName: 'Bo Ek',         teacherInitials: 'BE', subject: 'Slöjd',     group: '8A', date: '2026-06-23', startTime: '10:25', endTime: '12:10', lessonCount: 2, periodIds: [], status: 'filled',    mode: 'admin_assign', filledByType: 'external_sub', filledById: 'sub-10', filledBySubId: 'sub-10', filledBySubName: 'Lena Persson' },
+      // gap-14 expired cascade this week — pool exhausted (board variety).
+      { id: 'gap-14', teacherName: 'Ulla Strand',   teacherInitials: 'US', subject: 'Engelska',  group: '9A', date: '2026-06-22', startTime: '13:10', endTime: '14:55', lessonCount: 2, periodIds: [], status: 'expired',   mode: 'cascade',   filledByType: null, filledById: null, filledBySubId: null, filledBySubName: null },
     ];
 
     // Offers + targets. One offer per gap that has been sent or filled.
@@ -430,6 +489,8 @@
     const stepMin = 15;
     const ext = (id, fields) => ({ recipientType: 'external_sub', recipientId: id, subId: id, ...fields });
     const stf = (id, fields) => ({ recipientType: 'staff',        recipientId: id, subId: null, ...fields });
+    const live = new Date(BASE_NOW - 20 * 60000).toISOString();   // contacted ~20 min ago
+    const stepEnd = new Date(BASE_NOW + 8 * 60000).toISOString(); // cascade step still open
     const offers = [
       {
         // gap-1 cascade mid-flight: an internal staff member ranked first
@@ -468,6 +529,72 @@
           stf('staff-5', { rank: 1, state: 'accepted', responseToken: _token(), sentAt: null, respondedAt: new Date(BASE_NOW - 2 * 86400000).toISOString(), stepExpiresAt: null }),
         ],
       },
+
+      // ── EXTRA LIVE OFFERS — give each demo sub/staff MULTIPLE actionable ones ──
+      {
+        // gap-8 open_pool Matematik — contacts ALL Matematik candidates at once.
+        // subs 1/2/3 + staff 1/6 each get a SIMULTANEOUS contacted offer.
+        id: 'offer-8', gapId: 'gap-8', mode: 'open_pool',
+        targets: [
+          ext('sub-1',  { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-2',  { rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-3',  { rank: 3, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-1',{ rank: 4, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-6',{ rank: 5, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-9 open_pool Engelska — subs 4/5 + staff-2 contacted at once.
+        id: 'offer-9', gapId: 'gap-9', mode: 'open_pool',
+        targets: [
+          ext('sub-4',  { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-5',  { rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-2',{ rank: 3, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-10 open_pool Idrott — sub-9 + staff-4 contacted at once.
+        id: 'offer-10', gapId: 'gap-10', mode: 'open_pool',
+        targets: [
+          ext('sub-9',  { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-4',{ rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-11 cascade Matematik mid-flight — sub-1 contacted (rank 1, step
+        // open), sub-2 + staff-6 queued. Gives sub-1 a SECOND live offer.
+        id: 'offer-11', gapId: 'gap-11', mode: 'cascade',
+        targets: [
+          ext('sub-1',  { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: stepEnd }),
+          ext('sub-2',  { rank: 2, state: 'queued',    responseToken: _token(), sentAt: null, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-6',{ rank: 3, state: 'queued',    responseToken: _token(), sentAt: null, respondedAt: null, stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-12 open_pool Kemi — subs 7/8 + staff-3 contacted (a SECOND live
+        // pool offer for the Biologi/Kemi subs alongside gap-3).
+        id: 'offer-12', gapId: 'gap-12', mode: 'open_pool',
+        targets: [
+          ext('sub-7',  { rank: 1, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          ext('sub-8',  { rank: 2, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+          stf('staff-3',{ rank: 3, state: 'contacted', responseToken: _token(), sentAt: live, respondedAt: null, stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-13 filled external this week (admin_assign, Lena Persson · Slöjd).
+        id: 'offer-13', gapId: 'gap-13', mode: 'admin_assign',
+        targets: [
+          ext('sub-10', { rank: 1, state: 'accepted', responseToken: _token(), sentAt: null, respondedAt: new Date(BASE_NOW - 36 * 3600000).toISOString(), stepExpiresAt: null }),
+        ],
+      },
+      {
+        // gap-14 expired cascade this week — both contacted subs let it lapse.
+        id: 'offer-14', gapId: 'gap-14', mode: 'cascade',
+        targets: [
+          ext('sub-4', { rank: 1, state: 'declined', responseToken: _token(), sentAt: new Date(BASE_NOW - 3 * 86400000).toISOString(), respondedAt: new Date(BASE_NOW - 3 * 86400000 + 500000).toISOString(), stepExpiresAt: null }),
+          ext('sub-5', { rank: 2, state: 'expired',  responseToken: _token(), sentAt: new Date(BASE_NOW - 3 * 86400000 + 600000).toISOString(), respondedAt: null, stepExpiresAt: new Date(BASE_NOW - 3 * 86400000 + 1500000).toISOString() }),
+        ],
+      },
     ];
 
     // Assignments (write-back records) — one per filled gap.
@@ -476,66 +603,159 @@
     // internal cost 0 but we record the external comparison rate so the
     // savings hook can compute "what an external would have cost").
     const assignments = [
-      { id: 'asg-1', gapId: 'gap-4', date: '2026-06-23', recipientType: 'external_sub', recipientId: 'sub-9',   subId: 'sub-9', subName: 'Lars Ek',    subject: 'Idrott',   costSek: 305 * 2, externalComparableSek: 305 * 2, isExternal: true,  isConfirmed: true, assignedAt: new Date(BASE_NOW - 86400000).toISOString() },
-      { id: 'asg-2', gapId: 'gap-6', date: '2026-06-22', recipientType: 'staff',        recipientId: 'staff-5', subId: null,    subName: 'Johanna Ek', subject: 'Historia', costSek: 0,       externalComparableSek: 300 * 2, isExternal: false, isConfirmed: true, assignedAt: new Date(BASE_NOW - 2 * 86400000).toISOString() },
+      { id: 'asg-1', gapId: 'gap-4',  date: '2026-06-23', recipientType: 'external_sub', recipientId: 'sub-9',   subId: 'sub-9',  subName: 'Lars Ek',     subject: 'Idrott',   costSek: 305 * 2, externalComparableSek: 305 * 2, isExternal: true,  isConfirmed: true, assignedAt: new Date(BASE_NOW - 86400000).toISOString() },
+      { id: 'asg-2', gapId: 'gap-6',  date: '2026-06-22', recipientType: 'staff',        recipientId: 'staff-5', subId: null,     subName: 'Johanna Ek',  subject: 'Historia', costSek: 0,       externalComparableSek: 300 * 2, isExternal: false, isConfirmed: true, assignedAt: new Date(BASE_NOW - 2 * 86400000).toISOString() },
+      { id: 'asg-3', gapId: 'gap-13', date: '2026-06-23', recipientType: 'external_sub', recipientId: 'sub-10',  subId: 'sub-10', subName: 'Lena Persson', subject: 'Slöjd',   costSek: 270 * 2, externalComparableSek: 270 * 2, isExternal: true,  isConfirmed: true, assignedAt: new Date(BASE_NOW - 36 * 3600000).toISOString() },
     ];
 
-    // Audit log — append-only lifecycle events. Drives reliabilityScore.
-    // Seeded so scores come out varied and analytics are non-trivial.
-    const auditLog = [
-      { id: 'log-1',  ts: new Date(BASE_NOW - 5 * 86400000).toISOString(), type: 'offer_accepted',  gapId: 'gap-old-1', subId: 'sub-1', detail: 'Accepted Matematik 7C' },
-      { id: 'log-2',  ts: new Date(BASE_NOW - 4 * 86400000).toISOString(), type: 'offer_accepted',  gapId: 'gap-old-2', subId: 'sub-1', detail: 'Accepted Fysik 9A' },
-      { id: 'log-3',  ts: new Date(BASE_NOW - 3 * 86400000).toISOString(), type: 'offer_declined',  gapId: 'gap-old-3', subId: 'sub-2', detail: 'Declined Matematik 8A' },
-      { id: 'log-4',  ts: new Date(BASE_NOW - 3 * 86400000).toISOString(), type: 'offer_accepted',  gapId: 'gap-old-4', subId: 'sub-2', detail: 'Accepted Matematik 6B' },
-      { id: 'log-5',  ts: new Date(BASE_NOW - 6 * 86400000).toISOString(), type: 'offer_no_response',gapId: 'gap-old-5', subId: 'sub-5', detail: 'No response Engelska 7B' },
-      { id: 'log-6',  ts: new Date(BASE_NOW - 2 * 86400000).toISOString(), type: 'offer_accepted',  gapId: 'gap-old-6', subId: 'sub-7', detail: 'Accepted Biologi 9B' },
-      { id: 'log-7',  ts: new Date(BASE_NOW - 2 * 86400000).toISOString(), type: 'offer_accepted',  gapId: 'gap-old-7', subId: 'sub-8', detail: 'Accepted Kemi 8C' },
-      { id: 'log-8',  ts: new Date(BASE_NOW - 2 * 86400000).toISOString(), type: 'offer_accepted',  gapId: 'gap-old-8', subId: 'sub-9', detail: 'Accepted Idrott 7A' },
-      { id: 'log-9',  ts: new Date(BASE_NOW - 1 * 86400000).toISOString(), type: 'offer_declined',  gapId: 'gap-old-9', subId: 'sub-4', detail: 'Declined Svenska 9C' },
-      { id: 'log-10', ts: new Date(BASE_NOW - 1 * 86400000).toISOString(), type: 'offer_accepted',  gapId: 'gap-old-10', subId: 'sub-7', detail: 'Accepted Biologi 8A' },
-      // Demo-week events matching the seeded offers above
-      { id: 'log-11', ts: baseSent, type: 'offer_sent',      gapId: 'gap-1', subId: null,    detail: 'Cascade started · Matematik 8B' },
-      { id: 'log-12', ts: baseSent, type: 'target_contacted',gapId: 'gap-1', subId: 'sub-1', detail: 'Contacted rank 1' },
-      { id: 'log-13', ts: baseSent, type: 'offer_sent',      gapId: 'gap-3', subId: null,    detail: 'Open pool started · Biologi 9A' },
-      { id: 'log-14', ts: new Date(BASE_NOW - 86400000).toISOString(), type: 'admin_assigned', gapId: 'gap-4', subId: 'sub-9', detail: 'Admin assigned Lars Ek · Idrott 9C' },
-      { id: 'log-15', ts: new Date(BASE_NOW - 2 * 86400000 + 600000).toISOString(), type: 'offer_declined', gapId: 'gap-5', subId: 'sub-4', detail: 'Declined Engelska 8A' },
-      { id: 'log-16', ts: new Date(BASE_NOW - 2 * 86400000 + 1600000).toISOString(), type: 'target_expired', gapId: 'gap-5', subId: 'sub-5', detail: 'Step timeout' },
-      { id: 'log-17', ts: new Date(BASE_NOW - 2 * 86400000 + 1700000).toISOString(), type: 'offer_expired', gapId: 'gap-5', subId: null, detail: 'Cascade exhausted · Engelska 8A' },
+    // ── ~6 MONTHS OF OPERATING HISTORY (generated, deterministic) ──────────
+    // Audit log is append-only lifecycle events; it drives reliabilityScore
+    // AND analytics. Rather than a handful of hand-written rows we GENERATE a
+    // believable 6-month track record for every external sub and coverable
+    // staff member, varied per person so reliability spreads realistically.
+    //
+    // Determinism: everything is derived from BASE_NOW + the person's index +
+    // an event index. No Date.now()/Math.random() — resetDemo() reproduces it.
+    //
+    // Per-person "profile" (reliability archetype) chosen by index so the
+    // pool covers the full spread: highly-reliable (mostly accepts), solid,
+    // average, and flaky (more declines / no-response). The acceptance RATE
+    // these produce maps to the new rate-based score (≈45–95 across the pool).
+    const auditLog = [];
+    let _seq = 1;
+    const _logId = () => `log-${_seq++}`;
+    const HISTORY_DAYS = 180;                 // ~6 months
+    const HISTORY_START = BASE_NOW - HISTORY_DAYS * 86400000;
+
+    // A small per-archetype accept/decline/no-response weighting. The
+    // generator walks each person's volume and assigns an outcome by a
+    // deterministic rotating pattern built from these weights.
+    //   reliable: ~85% accept · solid: ~72% · average: ~60% · flaky: ~45%
+    const ARCHETYPES = [
+      { key: 'reliable', pattern: ['A','A','A','A','A','A','A','A','A','A','A','A','A','D','A','A','A','A','A','N'] }, // ~90% accept
+      { key: 'solid',    pattern: ['A','A','A','A','A','A','A','D','A','A','A','D','A','A','A','A','N','A','A','A'] }, // ~80% accept
+      { key: 'average',  pattern: ['A','A','A','D','A','A','D','N','A','D'] },        // ~60% accept
+      { key: 'flaky',    pattern: ['A','D','A','N','A','D','D','A','N','D'] },        // ~45% accept
     ];
 
-    // Enrich history with realistic offer_sent → resolution timelines so
-    // analytics (avgMinutesToFill, declineRate) read like a real week of ops.
-    // Each historical resolution gets a preceding offer_sent placed N minutes
-    // earlier; the gap drives avgMinutesToFill, the extra sends drive declineRate.
-    // ts of the matching resolution event - leadMinutes => offer_sent ts.
-    const _resolutionTs = {
-      'gap-old-1':  new Date(BASE_NOW - 5 * 86400000).getTime(),
-      'gap-old-2':  new Date(BASE_NOW - 4 * 86400000).getTime(),
-      'gap-old-3':  new Date(BASE_NOW - 3 * 86400000).getTime(),
-      'gap-old-4':  new Date(BASE_NOW - 3 * 86400000).getTime(),
-      'gap-old-5':  new Date(BASE_NOW - 6 * 86400000).getTime(),
-      'gap-old-6':  new Date(BASE_NOW - 2 * 86400000).getTime(),
-      'gap-old-7':  new Date(BASE_NOW - 2 * 86400000).getTime(),
-      'gap-old-8':  new Date(BASE_NOW - 2 * 86400000).getTime(),
-      'gap-old-9':  new Date(BASE_NOW - 1 * 86400000).getTime(),
-      'gap-old-10': new Date(BASE_NOW - 1 * 86400000).getTime(),
-      'gap-4':      new Date(BASE_NOW - 86400000).getTime(),
-    };
-    // leadMinutes per gap: filled gaps land 15–30 min; the no-response leads
-    // longest (unanswered). Average of the filled set ≈ 23 min.
-    const _leadMinutes = {
-      'gap-old-1': 18, 'gap-old-2': 25, 'gap-old-3': 12, 'gap-old-4': 15,
-      'gap-old-5': 40, 'gap-old-6': 22, 'gap-old-7': 30, 'gap-old-8': 20,
-      'gap-old-9': 19, 'gap-old-10': 27, 'gap-4': 24,
-    };
-    let _seq = auditLog.length + 1;
-    for (const gid of Object.keys(_resolutionTs)) {
-      const sentTs = new Date(_resolutionTs[gid] - _leadMinutes[gid] * 60000).toISOString();
-      auditLog.push({
-        id: `log-${_seq++}`, ts: sentTs, type: 'offer_sent',
-        gapId: gid, subId: null, detail: 'Offer sent (history)',
-      });
+    // Subjects a person could plausibly have covered (for believable detail
+    // strings + assignment subjects). Falls back to a generic subject.
+    function _personSubjects(rec) {
+      const subs = rec && Array.isArray(rec.subjects) ? rec.subjects.filter(Boolean) : [];
+      return subs.length ? subs : ['Matematik'];
     }
+    const _GROUPS = ['7A','7B','7C','8A','8B','8C','9A','9B','9C','6B'];
+
+    // Build the roster of historical actors: every external sub + every
+    // COVERABLE staff member, each with a deterministic volume + archetype.
+    // Externals carry more history than staff (subs work more cover); volume
+    // varies by index so totals aren't uniform.
+    const _historyActors = [];
+    subs.forEach((s, i) => {
+      const arche = ARCHETYPES[i % ARCHETYPES.length];
+      // 14–27 historical offers, varied per index (enough volume that the
+      // smoothed acceptance rate converges toward the archetype's true rate).
+      const volume = 14 + ((i * 3) % 14);
+      _historyActors.push({ type: 'external_sub', id: s.id, rec: s, arche, volume, seed: i });
+    });
+    staffMembers.filter(_isCoverableStaff).forEach((m, i) => {
+      // staff get fewer cover offers than externals; bias toward reliable/solid.
+      const arche = ARCHETYPES[i % 2];          // reliable or solid
+      const volume = 5 + ((i * 2) % 6);         // 5–10
+      _historyActors.push({ type: 'staff', id: m.id, rec: m, arche, volume, seed: 100 + i });
+    });
+
+    // Generated past assignments (one per ACCEPTED historical offer) accumulate
+    // here and are concatenated onto the live assignments above.
+    const historyAssignments = [];
+    let _hgap = 1, _hasg = 1;
+
+    for (const actor of _historyActors) {
+      const subjects = _personSubjects(actor.rec);
+      const isExt = actor.type === 'external_sub';
+      const rate = isExt ? (actor.rec.hourlyRate || 0) : (actor.rec.internalRate || 0);
+      for (let k = 0; k < actor.volume; k++) {
+        // Spread events across the 6-month window, oldest first. Deterministic
+        // day offset from start, fanned out by actor seed so people interleave.
+        const dayOffset = Math.floor((k + 1) * (HISTORY_DAYS - 8) / (actor.volume + 1))
+                        + ((actor.seed + k) % 5);
+        const eventMs = HISTORY_START + dayOffset * 86400000
+                      + ((actor.seed * 7 + k * 13) % 6) * 3600000; // hour-of-day jitter
+        const outcome = actor.arche.pattern[k % actor.arche.pattern.length];
+        const subject = subjects[k % subjects.length];
+        const group = _GROUPS[(actor.seed + k) % _GROUPS.length];
+        const gapId = `gap-h-${_hgap++}`;
+        // lead minutes 8–35, varied; this is offer_sent → resolution.
+        const lead = 8 + ((actor.seed * 3 + k * 5) % 28);
+        const sentMs = eventMs - lead * 60000;
+
+        // offer_sent precedes every historical offer (drives avgMinutesToFill,
+        // declineRate denominator).
+        auditLog.push({
+          id: _logId(), ts: new Date(sentMs).toISOString(), type: 'offer_sent',
+          gapId, recipientType: actor.type, recipientId: actor.id,
+          subId: isExt ? actor.id : null, detail: `Offer sent · ${subject} ${group}`,
+        });
+
+        if (outcome === 'A') {
+          auditLog.push({
+            id: _logId(), ts: new Date(eventMs).toISOString(), type: 'offer_accepted',
+            gapId, recipientType: actor.type, recipientId: actor.id,
+            subId: isExt ? actor.id : null, detail: `Accepted ${subject} ${group}`,
+          });
+          // matching past cover_assignment (1–2 lessons).
+          const lessons = 1 + ((actor.seed + k) % 2);
+          const cost = isExt ? rate * lessons : 0;
+          historyAssignments.push({
+            id: `asg-h-${_hasg++}`, gapId, date: _isoDay(eventMs),
+            recipientType: actor.type, recipientId: actor.id,
+            subId: isExt ? actor.id : null,
+            subName: isExt ? actor.rec.name : actor.rec.displayName,
+            subject, costSek: cost,
+            externalComparableSek: isExt ? cost : 300 * lessons,
+            isExternal: isExt, isConfirmed: true,
+            assignedAt: new Date(eventMs).toISOString(),
+          });
+        } else if (outcome === 'D') {
+          auditLog.push({
+            id: _logId(), ts: new Date(eventMs).toISOString(), type: 'offer_declined',
+            gapId, recipientType: actor.type, recipientId: actor.id,
+            subId: isExt ? actor.id : null, detail: `Declined ${subject} ${group}`,
+          });
+        } else { // 'N' — no response / step timeout
+          auditLog.push({
+            id: _logId(), ts: new Date(eventMs).toISOString(), type: 'target_expired',
+            gapId, recipientType: actor.type, recipientId: actor.id,
+            subId: isExt ? actor.id : null, detail: `No response ${subject} ${group}`,
+          });
+        }
+      }
+    }
+
+    // Splice generated assignments in front of the live ones (chronological-ish;
+    // the read paths sort by date anyway).
+    assignments.unshift(...historyAssignments);
+
+    // ── DEMO-WEEK EVENTS matching the seeded live offers above ─────────────
+    auditLog.push(
+      { id: _logId(), ts: baseSent, type: 'offer_sent',       gapId: 'gap-1', recipientType: null, recipientId: null, subId: null,    detail: 'Cascade started · Matematik 8B' },
+      { id: _logId(), ts: baseSent, type: 'target_contacted', gapId: 'gap-1', recipientType: 'staff', recipientId: 'staff-1', subId: null, detail: 'Contacted rank 1' },
+      { id: _logId(), ts: baseSent, type: 'offer_sent',       gapId: 'gap-3', recipientType: null, recipientId: null, subId: null,    detail: 'Open pool started · Biologi 9A' },
+      { id: _logId(), ts: new Date(BASE_NOW - 86400000).toISOString(),            type: 'admin_assigned', gapId: 'gap-4',  recipientType: 'external_sub', recipientId: 'sub-9',  subId: 'sub-9', detail: 'Admin assigned Lars Ek · Idrott 9C' },
+      { id: _logId(), ts: new Date(BASE_NOW - 2 * 86400000 + 600000).toISOString(),  type: 'offer_declined', gapId: 'gap-5',  recipientType: 'external_sub', recipientId: 'sub-4',  subId: 'sub-4', detail: 'Declined Engelska 8A' },
+      { id: _logId(), ts: new Date(BASE_NOW - 2 * 86400000 + 1600000).toISOString(), type: 'target_expired', gapId: 'gap-5',  recipientType: 'external_sub', recipientId: 'sub-5',  subId: 'sub-5', detail: 'Step timeout' },
+      { id: _logId(), ts: new Date(BASE_NOW - 2 * 86400000 + 1700000).toISOString(), type: 'offer_expired',  gapId: 'gap-5',  recipientType: null, recipientId: null, subId: null,    detail: 'Cascade exhausted · Engelska 8A' },
+      // live extra offers (offer_sent + a contact event each) so analytics see them
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-8',  recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Matematik 9B' },
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-9',  recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Engelska 8C' },
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-10', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Idrott 7C' },
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-11', recipientType: null, recipientId: null, subId: null, detail: 'Cascade started · Matematik 7A' },
+      { id: _logId(), ts: live, type: 'offer_sent', gapId: 'gap-12', recipientType: null, recipientId: null, subId: null, detail: 'Open pool started · Kemi 9C' },
+      { id: _logId(), ts: new Date(BASE_NOW - 36 * 3600000).toISOString(), type: 'admin_assigned', gapId: 'gap-13', recipientType: 'external_sub', recipientId: 'sub-10', subId: 'sub-10', detail: 'Admin assigned Lena Persson · Slöjd 8A' },
+      { id: _logId(), ts: new Date(BASE_NOW - 3 * 86400000 + 500000).toISOString(),  type: 'offer_declined', gapId: 'gap-14', recipientType: 'external_sub', recipientId: 'sub-4', subId: 'sub-4', detail: 'Declined Engelska 9A' },
+      { id: _logId(), ts: new Date(BASE_NOW - 3 * 86400000 + 1500000).toISOString(), type: 'target_expired', gapId: 'gap-14', recipientType: 'external_sub', recipientId: 'sub-5', subId: 'sub-5', detail: 'Step timeout' },
+      { id: _logId(), ts: new Date(BASE_NOW - 3 * 86400000 + 1600000).toISOString(), type: 'offer_expired',  gapId: 'gap-14', recipientType: null, recipientId: null, subId: null, detail: 'Cascade exhausted · Engelska 9A' },
+    );
 
     return {
       schoolSettings: {
@@ -1008,27 +1228,61 @@
       .sort((a, b) => (a.date).localeCompare(b.date));
   }
 
-  // Reliability score derived from the audit log, polymorphic over
-  // (type, id). base 50 + accepts*10 - declines*5 - noResponse*3,
-  // clamped 0..100. Internal staff with no history start near base
-  // (slightly above, since they're salaried colleagues already on
-  // site) — we nudge staff with empty history to 60 so a brand-new
-  // coverable colleague isn't ranked dead last by reliability alone.
-  function _reliabilityScore(type, id) {
-    // back-compat: _reliabilityScore('sub-1') still works (external)
-    if (id === undefined) { id = type; type = 'external_sub'; }
-    let accepts = 0, declines = 0, noResp = 0, seen = 0;
+  // Lifetime confirmed covers for a recipient (historical + live assignments).
+  function _lifetimeCovers(type, id) {
+    let n = 0;
+    for (const a of _store.assignments) {
+      const aType = a.recipientType || 'external_sub';
+      const aId   = a.recipientId != null ? a.recipientId : a.subId;
+      if (aType === type && aId === id) n++;
+    }
+    return n;
+  }
+
+  // ── RELIABILITY: ACCEPTANCE-RATE SCORE (single source of truth) ─────────
+  // Over months of history the old additive formula (50 + acc*10 - dec*5 -
+  // noResp*3) saturates to 100 for anyone with a steady accept history —
+  // everyone ends up 100, which is useless for ranking. Instead score by the
+  // SMOOTHED ACCEPTANCE RATE so it spreads realistically with volume:
+  //
+  //   score = round( 100 * (accepted + k) / (accepted + declined + noResp + 2k) )
+  //
+  // with smoothing k=2. A no-history recipient sits at exactly 50 (k/2k); a
+  // few events pull toward the true rate; high-volume reliable subs reach the
+  // low/mid-90s, flaky ones land in the mid-40s/50s — a believable ~45–95
+  // spread. No-response counts the same as a decline in the denominator (it
+  // failed to fill), so chronic non-responders score low too.
+  //
+  // ONE implementation, used by _reliabilityScore (listSubs / listStaff /
+  // matchCandidates) AND getReliabilityDetail, so they can never disagree.
+  const RELIABILITY_K = 2;
+  function _reliabilityFromCounts(accepted, declined, noResponse) {
+    const denom = accepted + declined + noResponse + 2 * RELIABILITY_K;
+    return Math.round((100 * (accepted + RELIABILITY_K)) / denom);
+  }
+
+  // Scan the audit log once for a recipient's scored-event counts + last activity.
+  function _reliabilityCounts(type, id) {
+    let accepted = 0, declined = 0, noResponse = 0, lastActivityIso = null;
     for (const e of _store.auditLog) {
       const eType = e.recipientType || (e.subId ? 'external_sub' : null);
       const eId   = e.recipientId != null ? e.recipientId : e.subId;
       if (eType !== type || eId !== id) continue;
-      if (e.type === 'offer_accepted')      { accepts++; seen++; }
-      else if (e.type === 'offer_declined') { declines++; seen++; }
-      else if (e.type === 'offer_no_response' || e.type === 'target_expired') { noResp++; seen++; }
+      if (e.type === 'offer_accepted')      accepted++;
+      else if (e.type === 'offer_declined') declined++;
+      else if (e.type === 'offer_no_response' || e.type === 'target_expired') noResponse++;
+      else continue; // not a scored event
+      if (!lastActivityIso || e.ts > lastActivityIso) lastActivityIso = e.ts;
     }
-    if (type === 'staff' && seen === 0) return 60;
-    const raw = 50 + accepts * 10 - declines * 5 - noResp * 3;
-    return Math.max(0, Math.min(100, raw));
+    return { accepted, declined, noResponse, lastActivityIso };
+  }
+
+  // Reliability score derived from the audit log, polymorphic over (type, id).
+  function _reliabilityScore(type, id) {
+    // back-compat: _reliabilityScore('sub-1') still works (external)
+    if (id === undefined) { id = type; type = 'external_sub'; }
+    const c = _reliabilityCounts(type, id);
+    return _reliabilityFromCounts(c.accepted, c.declined, c.noResponse);
   }
 
   // Derive the UI status of a gap from its stored status + offer targets.
@@ -1483,6 +1737,8 @@
         tier: _subTier(s),
         poolLabel: _poolLabel(_subTier(s)),
         reliabilityScore: _reliabilityScore(s.id),
+        joinedAt: s.joinedAt || null,
+        lifetimeCovers: _lifetimeCovers('external_sub', s.id),
       }));
     },
 
@@ -1496,6 +1752,8 @@
         tier: _subTier(s),
         poolLabel: _poolLabel(_subTier(s)),
         reliabilityScore: _reliabilityScore(s.id),
+        joinedAt: s.joinedAt || null,
+        lifetimeCovers: _lifetimeCovers('external_sub', s.id),
       };
     },
 
@@ -1600,6 +1858,8 @@
         coversThisMonth: _staffCoversInMonth(m.id),
         workloadPct: _staffWorkloadPct(m.id),
         coverable: _isCoverableStaff(m),
+        joinedAt: m.joinedAt || null,
+        lifetimeCovers: _lifetimeCovers('staff', m.id),
       }));
     },
 
@@ -1612,6 +1872,8 @@
         coversThisMonth: _staffCoversInMonth(m.id),
         workloadPct: _staffWorkloadPct(m.id),
         coverable: _isCoverableStaff(m),
+        joinedAt: m.joinedAt || null,
+        lifetimeCovers: _lifetimeCovers('staff', m.id),
       };
     },
 
@@ -2485,41 +2747,31 @@
       const rec = _recipientRecord(recipientType, recipientId);
       if (!rec) return null;
 
-      let accepted = 0, declined = 0, noResponse = 0;
-      let lastActivityIso = null;
+      // SAME scan + formula as _reliabilityScore — counts and score can never
+      // disagree with listSubs / listStaff / matchCandidates.
+      const c = _reliabilityCounts(recipientType, recipientId);
+      const { accepted, declined, noResponse, lastActivityIso } = c;
+      const total = accepted + declined + noResponse;
+      const score = _reliabilityFromCounts(accepted, declined, noResponse);
 
+      // first activity (oldest scored event) for a "member activity range".
+      let firstActivityIso = null;
       for (const e of _store.auditLog) {
         const eType = e.recipientType || (e.subId ? 'external_sub' : null);
         const eId   = e.recipientId != null ? e.recipientId : e.subId;
         if (eType !== recipientType || eId !== recipientId) continue;
-
-        const scored =
-          e.type === 'offer_accepted' ||
-          e.type === 'offer_declined' ||
-          e.type === 'offer_no_response' ||
-          e.type === 'target_expired';
-
-        if (!scored) continue;
-
-        if (e.type === 'offer_accepted')                                      accepted++;
-        else if (e.type === 'offer_declined')                                 declined++;
-        else if (e.type === 'offer_no_response' || e.type === 'target_expired') noResponse++;
-
-        if (!lastActivityIso || e.ts > lastActivityIso) lastActivityIso = e.ts;
+        if (!['offer_accepted','offer_declined','offer_no_response','target_expired'].includes(e.type)) continue;
+        if (!firstActivityIso || e.ts < firstActivityIso) firstActivityIso = e.ts;
       }
 
-      const total = accepted + declined + noResponse;
+      // lifetimeCovers — total historical + live confirmed assignments.
+      const lifetimeCovers = _lifetimeCovers(recipientType, recipientId);
 
-      // Mirror _reliabilityScore exactly (staff with zero history → 60).
-      let score;
-      if (recipientType === 'staff' && total === 0) {
-        score = 60;
-      } else {
-        score = 50 + accepted * 10 - declined * 5 - noResponse * 3;
-        score = Math.max(0, Math.min(100, score));
-      }
-
-      return { score, accepted, declined, noResponse, total, lastActivityIso };
+      return {
+        score, accepted, declined, noResponse, total,
+        lastActivityIso, firstActivityIso, lifetimeCovers,
+        joinedAt: rec.joinedAt || null,
+      };
     },
 
     // ======================================================
