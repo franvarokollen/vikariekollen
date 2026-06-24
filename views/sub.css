@@ -532,8 +532,18 @@
 }
 
 .subavail-swatch-avail {
-  background: var(--blue, #0F71F6);
-  border-color: var(--blue, #0F71F6);
+  background: var(--avail-bg);
+  border-color: var(--avail-border);
+  position: relative;
+}
+.subavail-swatch-avail::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--avail-dot);
+  transform: translate(-50%, -50%);
 }
 
 .subavail-swatch-unavail {
@@ -595,8 +605,20 @@
 }
 
 .subavail-slot.available {
-  background: var(--blue, #0F71F6);
-  border-color: var(--blue, #0F71F6);
+  background: var(--avail-bg);
+  border-color: var(--avail-border);
+  position: relative;
+}
+.subavail-slot.available::after {
+  content: '';
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--avail-dot);
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .subavail-slot:hover {

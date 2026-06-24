@@ -112,7 +112,7 @@
   // ----------------------------------------------------------
   const SCHEDULE = {
     days:  ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-    hours: [8, 9, 10, 11, 12, 13, 14, 15],
+    hours: [8, 9, 10, 11, 12, 13, 14, 15, 16],
   };
   const DAY_ABBR = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
